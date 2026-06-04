@@ -1,0 +1,25 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-green-dark: #1a3a27;
+  --color-green-mid: #40916c;
+  --color-green-pale: #c8e6d4;
+  --color-sand: #f5f0e8;
+  --color-gold: #b8860b;
+  --font-display: 'Libre Baskerville', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-body);
+    background-color: var(--color-sand);
+    color: var(--color-green-dark);
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+  }
+}
