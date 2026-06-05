@@ -7,13 +7,11 @@ import { useToast } from '../context/ToastContext'
 import { getCourseById } from '../lib/courses'
 import { addRecentCourse, setLastSubmitted } from '../lib/localStorage'
 import { supabase } from '../lib/supabase'
-import type { Course, CourseType, TimeOfDay, TransportMode } from '../types'
+import type { Course, TimeOfDay, TransportMode } from '../types'
 
 interface SubmitLocationState {
   courseId?: string
 }
-
-const COURSE_TYPES: CourseType[] = ['Public', 'Semi-Private', 'Private']
 
 export function Submit() {
   const navigate = useNavigate()
@@ -24,12 +22,6 @@ export function Submit() {
   const [firstName, setFirstName] = useState('')
   const [lastInitial, setLastInitial] = useState('')
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
-  const [addNewCourse, setAddNewCourse] = useState(false)
-  const [newCourseName, setNewCourseName] = useState('')
-  const [newCity, setNewCity] = useState('')
-  const [newState, setNewState] = useState('')
-  const [newHoles, setNewHoles] = useState('')
-  const [newCourseType, setNewCourseType] = useState<CourseType>('Public')
   const [datePlayed, setDatePlayed] = useState(
     () => new Date().toISOString().split('T')[0],
   )
@@ -56,22 +48,13 @@ export function Submit() {
 
   const prefillFromRecent = async (courseId: string) => {
     const c = await getCourseById(courseId)
-    if (c) {
-      setSelectedCourse(c)
-      setAddNewCourse(false)
-    }
+    if (c) setSelectedCourse(c)
   }
 
   const resetForm = () => {
     setFirstName('')
     setLastInitial('')
     setSelectedCourse(null)
-    setAddNewCourse(false)
-    setNewCourseName('')
-    setNewCity('')
-    setNewState('')
-    setNewHoles('')
-    setNewCourseType('Public')
     setDatePlayed(new Date().toISOString().split('T')[0])
     setTimeOfDay('morning')
     setPricePaid('')
@@ -83,32 +66,6 @@ export function Submit() {
     setFairways('')
     setMaintenance('')
     setOtherNotes('')
-  }
-
-  const resolveCourse = async (): Promise<Course | null> => {
-    if (selectedCourse) return selectedCourse
-    if (!addNewCourse) return null
-
-    const { data, error } = await supabase
-      .from('courses')
-      .insert({
-        course_name: newCourseName.trim(),
-        city: newCity.trim(),
-        state: newState.trim(),
-        holes: newHoles ? parseInt(newHoles, 10) : null,
-        course_type: newCourseType,
-        is_user_submitted: true,
-        is_approved: false,
-      })
-      .select()
-      .single()
-
-    if (error) {
-      console.error('Create course error:', error)
-      showToast('Could not add course. Try again.')
-      return null
-    }
-    return data as Course
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -123,21 +80,12 @@ export function Submit() {
       showToast('Last initial must be one letter.')
       return
     }
-    if (!selectedCourse && !addNewCourse) {
-      showToast('Select or add a course.')
-      return
-    }
-    if (addNewCourse && (!newCourseName.trim() || !newCity.trim() || !newState.trim())) {
-      showToast('Complete new course details.')
+    if (!selectedCourse) {
+      showToast('Select a course.')
       return
     }
 
     setSubmitting(true)
-    const course = await resolveCourse()
-    if (!course) {
-      setSubmitting(false)
-      return
-    }
 
     const h = parseInt(paceHours, 10) || 0
     const m = parseInt(paceMinutes, 10) || 0
@@ -146,7 +94,7 @@ export function Submit() {
     const { error } = await supabase.from('reports').insert({
       first_name: firstName.trim(),
       last_initial: lastInitial.trim().charAt(0).toUpperCase(),
-      course_id: course.id,
+      course_id: selectedCourse.id,
       date_played: datePlayed,
       time_of_day: timeOfDay,
       transport_mode: transport,
@@ -168,19 +116,21 @@ export function Submit() {
     }
 
     addRecentCourse({
-      id: course.id,
-      course_name: course.course_name,
-      city: course.city,
-      state: course.state,
+      id: selectedCourse.id,
+      course_name: selectedCourse.course_name,
+      city: selectedCourse.city,
+      state: selectedCourse.state,
     })
     setLastSubmitted(datePlayed)
     showToast('Report submitted — thank you!')
     resetForm()
-    navigate(`/course/${course.id}`)
+    navigate(`/course/${selectedCourse.id}`)
   }
 
   const inputClass =
-    'min-h-11 w-full rounded-lg border border-green-pale bg-white px-4 py-3 text-base text-green-dark focus:border-green-mid focus:outline-none focus:ring-2 focus:ring-green-mid/30'
+    'min-h-11 w-full min-w-0 max-w-full rounded-lg border border-green-pale bg-white px-4 py-3 text-base text-green-dark focus:border-green-mid focus:outline-none focus:ring-2 focus:ring-green-mid/30'
+  const fieldRowClass = 'grid grid-cols-1 gap-3 sm:grid-cols-2'
+  const fieldCellClass = 'min-w-0'
 
   return (
     <div>
@@ -228,92 +178,14 @@ export function Submit() {
           </div>
         </div>
 
-        {!addNewCourse ? (
-          <>
-            <CourseSearch
-              value={selectedCourse}
-              onSelect={setSelectedCourse}
-              onClear={() => setSelectedCourse(null)}
-            />
-            <button
-              type="button"
-              onClick={() => setAddNewCourse(true)}
-              className="min-h-11 text-sm font-semibold text-gold"
-            >
-              + Add a course not listed
-            </button>
-          </>
-        ) : (
-          <div className="space-y-3 rounded-lg border border-gold/30 bg-white p-4">
-            <div className="flex items-center justify-between">
-              <span className="font-semibold text-green-dark">New Course</span>
-              <button
-                type="button"
-                onClick={() => setAddNewCourse(false)}
-                className="text-sm text-green-mid"
-              >
-                Cancel
-              </button>
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium">Course Name *</label>
-              <input
-                value={newCourseName}
-                onChange={(e) => setNewCourseName(e.target.value)}
-                className={inputClass}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="mb-1 block text-sm font-medium">City *</label>
-                <input
-                  value={newCity}
-                  onChange={(e) => setNewCity(e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">State *</label>
-                <input
-                  value={newState}
-                  onChange={(e) => setNewState(e.target.value)}
-                  maxLength={2}
-                  className={inputClass}
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="mb-1 block text-sm font-medium">Holes</label>
-                <input
-                  type="number"
-                  min={1}
-                  max={27}
-                  value={newHoles}
-                  onChange={(e) => setNewHoles(e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">Course Type</label>
-                <select
-                  value={newCourseType}
-                  onChange={(e) => setNewCourseType(e.target.value as CourseType)}
-                  className={inputClass}
-                >
-                  {COURSE_TYPES.map((t) => (
-                    <option key={t} value={t}>
-                      {t}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
-        )}
+        <CourseSearch
+          value={selectedCourse}
+          onSelect={setSelectedCourse}
+          onClear={() => setSelectedCourse(null)}
+        />
 
-        <div className="grid grid-cols-2 gap-3">
-          <div>
+        <div className={fieldRowClass}>
+          <div className={fieldCellClass}>
             <label className="mb-1 block text-sm font-medium">Date Played *</label>
             <input
               type="date"
@@ -323,7 +195,7 @@ export function Submit() {
               className={inputClass}
             />
           </div>
-          <div>
+          <div className={fieldCellClass}>
             <label className="mb-1 block text-sm font-medium">Time of Day *</label>
             <select
               required
@@ -338,11 +210,12 @@ export function Submit() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <div>
+        <div className={fieldRowClass}>
+          <div className={fieldCellClass}>
             <label className="mb-1 block text-sm font-medium">Green Fee ($)</label>
             <input
               type="number"
+              inputMode="decimal"
               min={0}
               step="0.01"
               value={pricePaid}
@@ -350,11 +223,13 @@ export function Submit() {
               className={inputClass}
             />
           </div>
-          <div>
+          <div className={fieldCellClass}>
             <label className="mb-1 block text-sm font-medium">Pace of Play</label>
-            <div className="flex gap-2">
+            <div className="flex min-w-0 gap-2">
               <input
                 type="number"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 min={0}
                 max={8}
                 placeholder="hr"
@@ -364,6 +239,8 @@ export function Submit() {
               />
               <input
                 type="number"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 min={0}
                 max={59}
                 placeholder="min"
@@ -375,15 +252,15 @@ export function Submit() {
           </div>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div>
+        <div className={fieldRowClass}>
+          <div className={fieldCellClass}>
             <label className="mb-1 block text-sm font-medium">Walking or Cart</label>
             <TransportToggle
               value={transport}
               onChange={setTransport}
             />
           </div>
-          <div>
+          <div className={fieldCellClass}>
             <label className="mb-1 block text-sm font-medium">Walkability Notes</label>
             <input
               value={walkability}
