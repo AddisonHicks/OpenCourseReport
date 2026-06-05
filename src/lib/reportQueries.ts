@@ -90,11 +90,11 @@ export function timeOfDayEmoji(tod: string): string {
 export function timeOfDayLabel(tod: string): string {
   switch (tod) {
     case 'morning':
-      return 'Morning'
+      return 'AM'
     case 'midday':
-      return 'Midday'
+      return 'Mid'
     case 'afternoon':
-      return 'Afternoon'
+      return 'PM'
     default:
       return tod
   }

@@ -22,4 +22,14 @@
   h3 {
     font-family: var(--font-display);
   }
+
+  input[type='date'],
+  select {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  input[type='date'] {
+    -webkit-min-logical-width: 0;
+  }
 }

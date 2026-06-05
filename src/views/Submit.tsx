@@ -129,9 +129,12 @@ export function Submit() {
 
   const inputClass =
     'min-h-11 w-full min-w-0 max-w-full rounded-lg border border-green-pale bg-white px-4 py-3 text-base text-green-dark focus:border-green-mid focus:outline-none focus:ring-2 focus:ring-green-mid/30'
-  const fieldRowClass = 'grid grid-cols-1 gap-3 sm:grid-cols-2'
-  const fieldCellClass = 'min-w-0'
-
+  const compactInputClass =
+    'min-h-11 w-full min-w-0 max-w-full rounded-lg border border-green-pale bg-white px-2 py-3 text-base text-green-dark focus:border-green-mid focus:outline-none focus:ring-2 focus:ring-green-mid/30 sm:px-3'
+  const pairedRowClass =
+    'grid min-w-0 grid-cols-2 gap-2 sm:gap-3'
+  const pairedCellClass = 'min-w-0 overflow-hidden'
+  const pairedLabelClass = 'mb-1 block text-xs font-medium sm:text-sm'
   return (
     <div>
       <h1 className="mb-4 font-display text-2xl font-bold text-green-dark">
@@ -140,7 +143,7 @@ export function Submit() {
 
       <RecentCourses variant="tiles" onSelect={(id) => void prefillFromRecent(id)} />
 
-      <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
+      <form onSubmit={(e) => void handleSubmit(e)} className="space-y-3">
         <div
           className="absolute -left-[9999px] h-0 w-0 overflow-hidden"
           aria-hidden
@@ -184,35 +187,35 @@ export function Submit() {
           onClear={() => setSelectedCourse(null)}
         />
 
-        <div className={fieldRowClass}>
-          <div className={fieldCellClass}>
-            <label className="mb-1 block text-sm font-medium">Date Played *</label>
+        <div className={pairedRowClass}>
+          <div className={pairedCellClass}>
+            <label className={pairedLabelClass}>Date Played *</label>
             <input
               type="date"
               required
               value={datePlayed}
               onChange={(e) => setDatePlayed(e.target.value)}
-              className={inputClass}
+              className={compactInputClass}
             />
           </div>
-          <div className={fieldCellClass}>
-            <label className="mb-1 block text-sm font-medium">Time of Day *</label>
+          <div className={pairedCellClass}>
+            <label className={pairedLabelClass}>Time of Day *</label>
             <select
               required
               value={timeOfDay}
               onChange={(e) => setTimeOfDay(e.target.value as TimeOfDay)}
-              className={inputClass}
+              className={compactInputClass}
             >
-              <option value="morning">☀️ Morning</option>
-              <option value="midday">🌤 Midday</option>
-              <option value="afternoon">🌇 Afternoon</option>
+              <option value="morning">☀️ AM</option>
+              <option value="midday">🌤 Mid</option>
+              <option value="afternoon">🌇 PM</option>
             </select>
           </div>
         </div>
 
-        <div className={fieldRowClass}>
-          <div className={fieldCellClass}>
-            <label className="mb-1 block text-sm font-medium">Green Fee ($)</label>
+        <div className={pairedRowClass}>
+          <div className={pairedCellClass}>
+            <label className={pairedLabelClass}>Green Fee ($)</label>
             <input
               type="number"
               inputMode="decimal"
@@ -220,12 +223,12 @@ export function Submit() {
               step="0.01"
               value={pricePaid}
               onChange={(e) => setPricePaid(e.target.value)}
-              className={inputClass}
+              className={compactInputClass}
             />
           </div>
-          <div className={fieldCellClass}>
-            <label className="mb-1 block text-sm font-medium">Pace of Play</label>
-            <div className="flex min-w-0 gap-2">
+          <div className={pairedCellClass}>
+            <label className={pairedLabelClass}>Pace of Play</label>
+            <div className="flex min-w-0 gap-1">
               <input
                 type="number"
                 inputMode="numeric"
@@ -235,7 +238,7 @@ export function Submit() {
                 placeholder="hr"
                 value={paceHours}
                 onChange={(e) => setPaceHours(e.target.value)}
-                className={inputClass}
+                className={`${compactInputClass} min-w-0 flex-1`}
               />
               <input
                 type="number"
@@ -246,32 +249,32 @@ export function Submit() {
                 placeholder="min"
                 value={paceMinutes}
                 onChange={(e) => setPaceMinutes(e.target.value)}
-                className={inputClass}
+                className={`${compactInputClass} min-w-0 flex-1`}
               />
             </div>
           </div>
         </div>
 
-        <div className={fieldRowClass}>
-          <div className={fieldCellClass}>
-            <label className="mb-1 block text-sm font-medium">Walking or Cart</label>
+        <div className={pairedRowClass}>
+          <div className={pairedCellClass}>
+            <label className={pairedLabelClass}>Walking or Cart</label>
             <TransportToggle
               value={transport}
               onChange={setTransport}
             />
           </div>
-          <div className={fieldCellClass}>
-            <label className="mb-1 block text-sm font-medium">Walkability Notes</label>
+          <div className={pairedCellClass}>
+            <label className={pairedLabelClass}>Walkability Notes</label>
             <input
               value={walkability}
               onChange={(e) => setWalkability(e.target.value)}
               placeholder="Flat and easy / Very hilly…"
-              className={inputClass}
+              className={compactInputClass}
             />
           </div>
         </div>
 
-        <div className="border-t border-green-pale pt-4">
+        <div className="border-t border-green-pale pt-3">
           <h2 className="mb-3 font-display text-lg font-bold text-green-dark">
             Course Conditions
           </h2>

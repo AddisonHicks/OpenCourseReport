@@ -11,18 +11,18 @@ export function TransportToggle({ value, onChange }: TransportToggleProps) {
       <button
         type="button"
         onClick={() => onChange('walking')}
-        className={`min-h-11 flex-1 rounded-md px-3 text-sm font-semibold transition-colors ${
+        className={`min-h-11 min-w-0 flex-1 rounded-md px-1.5 text-xs font-semibold transition-colors sm:px-2 sm:text-sm ${
           value === 'walking'
             ? 'bg-green-dark text-sand'
             : 'text-green-dark active:bg-green-pale/50'
         }`}
       >
-        🚶 Walking
+        🚶 Walk
       </button>
       <button
         type="button"
         onClick={() => onChange('cart')}
-        className={`min-h-11 flex-1 rounded-md px-3 text-sm font-semibold transition-colors ${
+        className={`min-h-11 min-w-0 flex-1 rounded-md px-1.5 text-xs font-semibold transition-colors sm:px-2 sm:text-sm ${
           value === 'cart'
             ? 'bg-green-dark text-sand'
             : 'text-green-dark active:bg-green-pale/50'

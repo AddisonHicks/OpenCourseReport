@@ -148,13 +148,13 @@ export function CoursePage() {
             <h2 className="mb-2 font-display text-sm font-bold">Pace by Time of Day</h2>
             <ul className="space-y-1 text-green-dark/80">
               <li>
-                {timeOfDayEmoji('morning')} Morning avg: {paceByTod('morning')}
+                {timeOfDayEmoji('morning')} AM avg: {paceByTod('morning')}
               </li>
               <li>
-                {timeOfDayEmoji('midday')} Midday avg: {paceByTod('midday')}
+                {timeOfDayEmoji('midday')} Mid avg: {paceByTod('midday')}
               </li>
               <li>
-                {timeOfDayEmoji('afternoon')} Afternoon avg: {paceByTod('afternoon')}
+                {timeOfDayEmoji('afternoon')} PM avg: {paceByTod('afternoon')}
               </li>
             </ul>
           </div>
