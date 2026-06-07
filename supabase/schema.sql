@@ -8,10 +8,9 @@ create table if not exists courses (
   course_name text not null,
   city text not null,
   state text not null,
+  zipcode text,
   holes integer,
   course_type text check (course_type in ('Public', 'Semi-Private', 'Private')),
-  phone text,
-  website text,
   is_user_submitted boolean default false,
   is_approved boolean default true,
   created_at timestamptz default now()
@@ -48,6 +47,14 @@ create index if not exists idx_reports_created_at on reports(created_at desc);
 create index if not exists idx_courses_name on courses(course_name);
 create index if not exists idx_courses_approved on courses(is_approved);
 
+create index if not exists idx_courses_zipcode on courses(zipcode);
+
+-- Migration for existing databases:
+-- alter table courses add column if not exists zipcode text;
+-- create index if not exists idx_courses_zipcode on courses(zipcode);
+-- alter table courses drop column if exists phone;
+-- alter table courses drop column if exists website;
+
 alter table courses enable row level security;
 alter table reports enable row level security;
 alter table report_votes enable row level security;
@@ -57,10 +64,15 @@ drop policy if exists "courses_select" on courses;
 create policy "courses_select" on courses for select
   using (is_approved = true or is_user_submitted = true);
 
--- Anyone can insert user-submitted courses
+-- Anyone can insert user-submitted courses (pending review)
 drop policy if exists "courses_insert_user" on courses;
 create policy "courses_insert_user" on courses for insert
   with check (is_user_submitted = true and is_approved = false);
+
+-- Approved course seeding (maintainer add-course form)
+drop policy if exists "courses_insert_approved" on courses;
+create policy "courses_insert_approved" on courses for insert
+  with check (is_user_submitted = false and is_approved = true);
 
 -- Public read reports
 drop policy if exists "reports_select" on reports;

@@ -1,26 +1,19 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { EmbedSnippet } from '../components/EmbedSnippet'
-import { ReportCard } from '../components/ReportCard'
-import { useToast } from '../context/ToastContext'
-import { getCourseById } from '../lib/courses'
-import {
-  apply90DayFilter,
-  average,
-  formatPace,
-  formatPrice,
-  timeOfDayEmoji,
-} from '../lib/reportQueries'
+import { BrowseCourseRow } from '../components/BrowseCourseRow'
+import { ReportModal } from '../components/ReportModal'
+import { getCourseById, formatCourseLocation } from '../lib/courses'
+import { apply90DayFilter, formatDateNumeric } from '../lib/reportQueries'
 import { fetchReportsForCourse } from '../lib/reports'
-import type { Course, ReportDisplay, TimeOfDay } from '../types'
+import type { Course, ReportDisplay } from '../types'
 
 export function CoursePage() {
   const { courseId } = useParams<{ courseId: string }>()
   const navigate = useNavigate()
-  const { showToast } = useToast()
   const [course, setCourse] = useState<Course | null>(null)
   const [reports, setReports] = useState<ReportDisplay[]>([])
   const [loading, setLoading] = useState(true)
+  const [activeReport, setActiveReport] = useState<ReportDisplay | null>(null)
 
   const load = useCallback(async () => {
     if (!courseId) return
@@ -38,29 +31,17 @@ export function CoursePage() {
     void load()
   }, [load])
 
-  const statsReports = reports.filter((r) => !r.isOlderReport)
+  const sortedReports = useMemo(
+    () =>
+      [...reports].sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+      ),
+    [reports],
+  )
 
-  const avgPace = average(statsReports.map((r) => r.pace_of_play))
-  const avgPrice = average(statsReports.map((r) => r.price_paid))
-  const walkCount = statsReports.filter((r) => r.transport_mode === 'walking').length
-  const cartCount = statsReports.filter((r) => r.transport_mode === 'cart').length
-  const transportTotal = walkCount + cartCount
-  const walkPct =
-    transportTotal > 0 ? Math.round((walkCount / transportTotal) * 100) : null
-
-  const paceByTod = (tod: TimeOfDay) => {
-    const subset = statsReports.filter((r) => r.time_of_day === tod)
-    return formatPace(average(subset.map((r) => r.pace_of_play)))
-  }
-
-  const copyCourseUrl = async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.href)
-      showToast('Course link copied!')
-    } catch {
-      showToast('Could not copy link')
-    }
-  }
+  const lastReport = sortedReports[0] ?? null
+  const recentReports = sortedReports.slice(1)
 
   if (loading) {
     return <p className="text-sm text-green-dark/60">Loading course…</p>
@@ -78,117 +59,77 @@ export function CoursePage() {
   }
 
   return (
-    <div>
-      <button
-        type="button"
-        onClick={() => navigate(-1)}
-        className="mb-3 min-h-11 text-sm font-medium text-green-mid"
-      >
-        ← Back
-      </button>
-
-      <header className="mb-4">
-        <h1 className="font-display text-2xl font-bold text-green-dark">
-          {course.course_name}
-        </h1>
-        <p className="text-sm text-green-dark/70">
-          {course.city}, {course.state}
-          {course.course_type && ` · ${course.course_type}`}
-          {course.holes != null && ` · ${course.holes} holes`}
-        </p>
-        {(course.phone || course.website) && (
-          <p className="mt-2 text-sm">
-            {course.phone && (
-              <a href={`tel:${course.phone}`} className="text-green-mid">
-                {course.phone}
-              </a>
-            )}
-            {course.phone && course.website && ' · '}
-            {course.website && (
-              <a
-                href={course.website.startsWith('http') ? course.website : `https://${course.website}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-green-mid underline"
-              >
-                Website
-              </a>
-            )}
+    <div className="-mx-4 space-y-8 px-4">
+      <header className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="font-display text-2xl font-bold leading-tight text-green-dark">
+            {course.course_name}
+          </h1>
+          <p className="font-display text-base text-green-dark/70">
+            {formatCourseLocation(course)}
           </p>
-        )}
-        {!course.is_approved && course.is_user_submitted && (
-          <p className="mt-2 text-xs text-gold">User-submitted · pending review</p>
-        )}
+        </div>
+        <p className="shrink-0 pt-1 text-right font-display text-sm text-green-dark">
+          Last Report:{' '}
+          {lastReport ? formatDateNumeric(lastReport.date_played) : '—'}
+        </p>
       </header>
 
-      {statsReports.length > 0 && (
-        <>
-          <div className="mb-4 grid grid-cols-3 gap-2 rounded-xl border border-green-pale bg-white p-3 text-center text-xs">
-            <div>
-              <div className="font-bold text-green-dark">
-                {avgPace != null ? formatPace(Math.round(avgPace)) : '—'}
-              </div>
-              <div className="text-green-dark/50">Avg pace</div>
-            </div>
-            <div>
-              <div className="font-bold text-green-dark">
-                {avgPrice != null ? formatPrice(avgPrice) : '—'}
-              </div>
-              <div className="text-green-dark/50">Avg fee</div>
-            </div>
-            <div>
-              <div className="font-bold text-green-dark">
-                {walkPct != null ? `${walkPct}% walk` : '—'}
-              </div>
-              <div className="text-green-dark/50">Transport</div>
-            </div>
-          </div>
-
-          <div className="mb-4 rounded-xl border border-green-pale bg-white p-3 text-sm">
-            <h2 className="mb-2 font-display text-sm font-bold">Pace by Time of Day</h2>
-            <ul className="space-y-1 text-green-dark/80">
-              <li>
-                {timeOfDayEmoji('morning')} AM avg: {paceByTod('morning')}
-              </li>
-              <li>
-                {timeOfDayEmoji('midday')} Mid avg: {paceByTod('midday')}
-              </li>
-              <li>
-                {timeOfDayEmoji('afternoon')} PM avg: {paceByTod('afternoon')}
-              </li>
-            </ul>
-          </div>
-        </>
-      )}
-
-      <div className="mb-4 flex flex-col gap-2">
-        <button
-          type="button"
-          onClick={() => navigate('/submit', { state: { courseId: course.id } })}
-          className="min-h-11 w-full rounded-lg bg-green-mid px-4 py-3 text-sm font-bold text-sand"
-        >
-          Submit a report for this course
-        </button>
-        <button
-          type="button"
-          onClick={() => void copyCourseUrl()}
-          className="min-h-11 w-full rounded-lg border border-green-mid/40 bg-white px-4 py-3 text-sm font-semibold text-green-mid"
-        >
-          Share Course Page
-        </button>
-        <EmbedSnippet courseId={course.id} />
-      </div>
+      <button
+        type="button"
+        onClick={() =>
+          navigate(`/submit?course=${course.id}`, {
+            state: { courseId: course.id, course },
+          })
+        }
+        className="min-h-12 w-full rounded-xl bg-green-dark px-4 py-3 font-display text-lg font-bold text-sand"
+      >
+        Submit Report
+      </button>
 
       <section>
-        <h2 className="mb-3 font-display text-lg font-bold text-green-dark">
-          Reports
+        <h2 className="mb-3 font-display text-2xl font-bold text-green-dark">
+          Last Report
         </h2>
-        {reports.length === 0 ? (
-          <p className="text-sm text-green-dark/60">No reports for this course yet.</p>
+        {!lastReport ? (
+          <div className="rounded-xl bg-tan px-4 py-5 text-sm text-green-dark/70">
+            No reports for this course yet.
+          </div>
         ) : (
-          reports.map((r) => <ReportCard key={r.id} report={r} />)
+          <BrowseCourseRow
+            variant="card"
+            course={course}
+            lastReportDate={lastReport.date_played}
+            onSelect={() => setActiveReport(lastReport)}
+          />
         )}
       </section>
+
+      {recentReports.length > 0 && (
+        <section>
+          <h2 className="mb-3 font-display text-2xl font-bold text-green-dark">
+            Recent Reports
+          </h2>
+          <div className="space-y-2">
+            {recentReports.map((report) => (
+              <BrowseCourseRow
+                key={report.id}
+                variant="card"
+                course={course}
+                lastReportDate={report.date_played}
+                onSelect={() => setActiveReport(report)}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {activeReport && (
+        <ReportModal
+          report={activeReport}
+          onClose={() => setActiveReport(null)}
+        />
+      )}
     </div>
   )
 }

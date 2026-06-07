@@ -44,6 +44,7 @@ The app stores a small amount of client-side state in the browser — not on the
 
 | Key | Purpose |
 |-----|---------|
+| `fr_user_zipcode` | User's zip code for nearby report filtering |
 | `fr_recent_courses` | Up to 3 recent courses |
 | `fr_last_submitted` | Last report submit date |
 | `fr_voted_[report-id]` | Helpful vote tracking |

@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { Layout } from './components/Layout'
 import { ToastProvider } from './context/ToastContext'
+import { AddCourse } from './views/AddCourse'
 import { About } from './views/About'
 import { Browse } from './views/Browse'
 import { CoursePage } from './views/CoursePage'
@@ -17,6 +18,7 @@ export default function App() {
             <Route index element={<Browse />} />
             <Route path="submit" element={<Submit />} />
             <Route path="about" element={<About />} />
+            <Route path="add-course" element={<AddCourse />} />
             <Route path="course/:courseId" element={<CoursePage />} />
           </Route>
           <Route path="report/:reportId" element={<ReportPage />} />

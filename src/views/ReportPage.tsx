@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
-import { ReportCardExpanded } from '../components/ReportCardExpanded'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { ReportModal } from '../components/ReportModal'
 import { fetchReportById } from '../lib/reports'
 import { isWithin90Days } from '../lib/reportQueries'
 import type { ReportDisplay } from '../types'
@@ -17,6 +17,7 @@ function setMeta(property: string, content: string) {
 
 export function ReportPage() {
   const { reportId } = useParams<{ reportId: string }>()
+  const navigate = useNavigate()
   const [report, setReport] = useState<ReportDisplay | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -73,14 +74,9 @@ export function ReportPage() {
   }
 
   return (
-    <div className="mx-auto min-h-dvh max-w-lg bg-sand px-4 py-6">
-      <Link
-        to={`/course/${report.courses.id}`}
-        className="mb-4 inline-flex min-h-11 items-center text-sm font-medium text-green-mid"
-      >
-        ← {report.courses.course_name}
-      </Link>
-      <ReportCardExpanded report={report} />
-    </div>
+    <ReportModal
+      report={report}
+      onClose={() => navigate(`/course/${report.courses.id}`)}
+    />
   )
 }

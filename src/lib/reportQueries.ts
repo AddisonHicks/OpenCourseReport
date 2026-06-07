@@ -92,7 +92,7 @@ export function timeOfDayLabel(tod: string): string {
     case 'morning':
       return 'AM'
     case 'midday':
-      return 'Mid'
+      return 'Mid-Day'
     case 'afternoon':
       return 'PM'
     default:
@@ -107,6 +107,14 @@ export function formatDate(dateStr: string): string {
     day: 'numeric',
     year: 'numeric',
   })
+}
+
+export function formatDateNumeric(dateStr: string): string {
+  const d = new Date(dateStr.includes('T') ? dateStr : dateStr + 'T12:00:00')
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  const yyyy = d.getFullYear()
+  return `${mm}/${dd}/${yyyy}`
 }
 
 export function formatPrice(price: number | null): string {

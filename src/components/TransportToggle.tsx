@@ -17,7 +17,7 @@ export function TransportToggle({ value, onChange }: TransportToggleProps) {
             : 'text-green-dark active:bg-green-pale/50'
         }`}
       >
-        🚶 Walk
+        Walk
       </button>
       <button
         type="button"
@@ -28,7 +28,7 @@ export function TransportToggle({ value, onChange }: TransportToggleProps) {
             : 'text-green-dark active:bg-green-pale/50'
         }`}
       >
-        🛺 Cart
+        Cart
       </button>
     </div>
   )

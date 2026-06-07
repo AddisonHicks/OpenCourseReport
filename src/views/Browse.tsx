@@ -1,18 +1,38 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CourseSearch } from '../components/CourseSearch'
-import { RecentCourses } from '../components/RecentCourses'
-import { ReportCard } from '../components/ReportCard'
+import { BrowseCourseRow } from '../components/BrowseCourseRow'
+import { HomeSearchPanel } from '../components/HomeSearchPanel'
+import { UserAreaZip } from '../components/UserAreaZip'
+import { getUserZipcode } from '../lib/localStorage'
 import { buildDisplayFeed } from '../lib/reportQueries'
 import { fetchReportsFeed } from '../lib/reports'
-import type { Course, ReportDisplay } from '../types'
+import { filterReportsWithinRadius } from '../lib/zipcode'
+import type { ReportDisplay } from '../types'
+
+function latestReportPerCourse(reports: ReportDisplay[]): ReportDisplay[] {
+  const byCourse = new Map<string, ReportDisplay>()
+  for (const r of reports) {
+    const existing = byCourse.get(r.course_id)
+    if (
+      !existing ||
+      new Date(r.created_at).getTime() > new Date(existing.created_at).getTime()
+    ) {
+      byCourse.set(r.course_id, r)
+    }
+  }
+  return Array.from(byCourse.values()).sort(
+    (a, b) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+  )
+}
 
 export function Browse() {
   const navigate = useNavigate()
-  const [searchCourse, setSearchCourse] = useState<Course | null>(null)
-  const [searchQuery, setSearchQuery] = useState('')
   const [reports, setReports] = useState<ReportDisplay[]>([])
+  const [nearbyReports, setNearbyReports] = useState<ReportDisplay[]>([])
   const [loading, setLoading] = useState(true)
+  const [filtering, setFiltering] = useState(false)
+  const [userZip, setUserZip] = useState<string | null>(() => getUserZipcode())
 
   const loadFeed = useCallback(async () => {
     setLoading(true)
@@ -26,59 +46,75 @@ export function Browse() {
   }, [loadFeed])
 
   useEffect(() => {
-    if (!searchCourse) return
-    navigate(`/course/${searchCourse.id}`)
-    setSearchCourse(null)
-  }, [searchCourse, navigate])
+    if (!userZip) {
+      setNearbyReports([])
+      return
+    }
 
-  const showRecent = searchQuery.trim().length < 3
+    const latest = latestReportPerCourse(reports)
+    setFiltering(true)
+    void filterReportsWithinRadius(userZip, latest)
+      .then((filtered) => setNearbyReports(filtered.slice(0, 12)))
+      .finally(() => setFiltering(false))
+  }, [reports, userZip])
+
+  const showLoading = loading || filtering
 
   return (
-    <div>
-      <header className="mb-4">
-        <h1 className="font-display text-2xl font-bold text-green-dark">
-          OpenCourseReport
-        </h1>
-        <p className="text-sm text-green-dark/70">
-          Real-time golf course conditions from golfers like you
-        </p>
-      </header>
+    <div className="-mx-4">
+      <div className="space-y-8 px-4 pt-6">
+        <HomeSearchPanel />
 
-      <CourseSearch
-        value={searchCourse}
-        onSelect={setSearchCourse}
-        onClear={() => setSearchCourse(null)}
-        onQueryChange={setSearchQuery}
-        placeholder="Find a course…"
-        label="Search courses"
-      />
-
-      {showRecent && <RecentCourses />}
-
-      <section className="mt-6">
-        <h2 className="mb-3 font-display text-lg font-bold text-green-dark">
-          Recent Reports
-        </h2>
-        {loading && (
-          <p className="text-sm text-green-dark/60">Loading reports…</p>
-        )}
-        {!loading && reports.length === 0 && (
-          <p className="rounded-lg border border-green-pale bg-white p-4 text-sm text-green-dark/70">
-            No reports yet. Be the first to{' '}
-            <button
-              type="button"
-              onClick={() => navigate('/submit')}
-              className="font-semibold text-green-mid underline"
-            >
-              submit one
-            </button>
-            .
+        <section>
+          <h2 className="font-display text-2xl font-bold text-green-dark">
+            Recent Reports
+          </h2>
+          <p className="mb-1 font-display text-base text-green-dark">
+            Based on Your Area (75 mile radius)
           </p>
-        )}
-        {reports.map((r) => (
-          <ReportCard key={r.id} report={r} />
-        ))}
-      </section>
+
+          <UserAreaZip userZip={userZip} onZipChange={setUserZip} />
+
+          {showLoading && (
+            <p className="text-sm text-green-dark/60">Loading reports…</p>
+          )}
+
+          {!showLoading && !userZip && (
+            <div className="rounded-2xl bg-white px-4 py-5 font-body text-sm text-green-dark/70 shadow-sm">
+              Save your zip code above to see recent reports from courses near
+              you.
+            </div>
+          )}
+
+          {!showLoading && userZip && nearbyReports.length === 0 && (
+            <div className="rounded-2xl bg-white px-4 py-5 font-body text-sm text-green-dark/70 shadow-sm">
+              No reports within 75 miles of {userZip} yet.{' '}
+              <button
+                type="button"
+                onClick={() => navigate('/submit')}
+                className="font-semibold text-green-mid underline"
+              >
+                Submit one
+              </button>
+              .
+            </div>
+          )}
+
+          {!showLoading && nearbyReports.length > 0 && (
+            <div className="space-y-3">
+              {nearbyReports.map((r) => (
+                <BrowseCourseRow
+                  key={r.course_id}
+                  variant="card"
+                  course={r.courses}
+                  lastReportDate={r.date_played}
+                  onSelect={() => navigate(`/course/${r.course_id}`)}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
     </div>
   )
 }

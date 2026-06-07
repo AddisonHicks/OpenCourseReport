@@ -1,23 +1,26 @@
 import { useEffect, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { CourseSearch } from '../components/CourseSearch'
-import { RecentCourses } from '../components/RecentCourses'
 import { TransportToggle } from '../components/TransportToggle'
+import { SubmitConfirmation } from '../components/SubmitConfirmation'
 import { useToast } from '../context/ToastContext'
-import { getCourseById } from '../lib/courses'
-import { addRecentCourse, setLastSubmitted } from '../lib/localStorage'
+import { getCourseById, formatCourseLocation } from '../lib/courses'
+import { addRecentCourse, setLastSubmitted, setUserZipcode } from '../lib/localStorage'
 import { supabase } from '../lib/supabase'
 import type { Course, TimeOfDay, TransportMode } from '../types'
 
 interface SubmitLocationState {
   courseId?: string
+  course?: Course
 }
 
 export function Submit() {
   const navigate = useNavigate()
   const location = useLocation()
+  const [searchParams] = useSearchParams()
   const { showToast } = useToast()
   const state = location.state as SubmitLocationState | null
+  const courseIdParam = searchParams.get('course')
 
   const [firstName, setFirstName] = useState('')
   const [lastInitial, setLastInitial] = useState('')
@@ -30,38 +33,40 @@ export function Submit() {
   const [paceHours, setPaceHours] = useState('')
   const [paceMinutes, setPaceMinutes] = useState('')
   const [transport, setTransport] = useState<TransportMode | null>(null)
-  const [walkability, setWalkability] = useState('')
   const [greens, setGreens] = useState('')
   const [fairways, setFairways] = useState('')
   const [maintenance, setMaintenance] = useState('')
   const [otherNotes, setOtherNotes] = useState('')
   const [honeypot, setHoneypot] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [confirmedCourse, setConfirmedCourse] = useState<Course | null>(null)
 
   useEffect(() => {
-    const id = state?.courseId
-    if (!id) return
+    if (state?.course) {
+      setSelectedCourse(state.course)
+      return
+    }
+
+    const id = courseIdParam ?? state?.courseId
+    if (!id) {
+      setSelectedCourse(null)
+      return
+    }
+
     void getCourseById(id).then((c) => {
       if (c) setSelectedCourse(c)
     })
-  }, [state?.courseId])
-
-  const prefillFromRecent = async (courseId: string) => {
-    const c = await getCourseById(courseId)
-    if (c) setSelectedCourse(c)
-  }
+  }, [courseIdParam, state?.course, state?.courseId])
 
   const resetForm = () => {
     setFirstName('')
     setLastInitial('')
-    setSelectedCourse(null)
     setDatePlayed(new Date().toISOString().split('T')[0])
     setTimeOfDay('morning')
     setPricePaid('')
     setPaceHours('')
     setPaceMinutes('')
     setTransport(null)
-    setWalkability('')
     setGreens('')
     setFairways('')
     setMaintenance('')
@@ -98,7 +103,7 @@ export function Submit() {
       date_played: datePlayed,
       time_of_day: timeOfDay,
       transport_mode: transport,
-      walkability_notes: walkability.trim() || null,
+      walkability_notes: null,
       price_paid: pricePaid ? parseFloat(pricePaid) : null,
       pace_of_play: paceTotal,
       greens_report: greens.trim() || null,
@@ -122,26 +127,57 @@ export function Submit() {
       state: selectedCourse.state,
     })
     setLastSubmitted(datePlayed)
-    showToast('Report submitted — thank you!')
+    if (selectedCourse.zipcode) {
+      setUserZipcode(selectedCourse.zipcode)
+    }
+    setConfirmedCourse(selectedCourse)
     resetForm()
-    navigate(`/course/${selectedCourse.id}`)
+    setSelectedCourse(null)
+    navigate('/submit', { replace: true })
   }
 
+  const labelClass = 'mb-1 block font-display text-base text-green-dark'
   const inputClass =
-    'min-h-11 w-full min-w-0 max-w-full rounded-lg border border-green-pale bg-white px-4 py-3 text-base text-green-dark focus:border-green-mid focus:outline-none focus:ring-2 focus:ring-green-mid/30'
+    'min-h-11 w-full min-w-0 max-w-full rounded-lg border-0 bg-white px-3 py-3 text-base text-green-dark shadow-sm focus:outline-none focus:ring-2 focus:ring-green-mid/40'
   const compactInputClass =
-    'min-h-11 w-full min-w-0 max-w-full rounded-lg border border-green-pale bg-white px-2 py-3 text-base text-green-dark focus:border-green-mid focus:outline-none focus:ring-2 focus:ring-green-mid/30 sm:px-3'
-  const pairedRowClass =
-    'grid min-w-0 grid-cols-2 gap-2 sm:gap-3'
+    'min-h-11 w-full min-w-0 max-w-full rounded-lg border-0 bg-white px-2 py-3 text-base text-green-dark shadow-sm focus:outline-none focus:ring-2 focus:ring-green-mid/40 sm:px-3'
+  const textareaClass =
+    'min-h-24 w-full rounded-lg border-0 bg-white px-3 py-3 text-base text-green-dark shadow-sm focus:outline-none focus:ring-2 focus:ring-green-mid/40'
+  const pairedRowClass = 'grid min-w-0 grid-cols-2 gap-2 sm:gap-3'
   const pairedCellClass = 'min-w-0 overflow-hidden'
-  const pairedLabelClass = 'mb-1 block text-xs font-medium sm:text-sm'
-  return (
-    <div>
-      <h1 className="mb-4 font-display text-2xl font-bold text-green-dark">
-        Submit a Report
-      </h1>
 
-      <RecentCourses variant="tiles" onSelect={(id) => void prefillFromRecent(id)} />
+  if (confirmedCourse) {
+    return (
+      <SubmitConfirmation
+        course={confirmedCourse}
+        onHome={() => navigate('/')}
+        onCoursePage={() => navigate(`/course/${confirmedCourse.id}`)}
+      />
+    )
+  }
+
+  return (
+    <div className="-mx-4 px-4">
+      {selectedCourse ? (
+        <header className="mb-6">
+          <h1 className="font-display text-2xl font-bold leading-tight text-green-dark">
+            {selectedCourse.course_name}
+          </h1>
+          <p className="font-display text-base text-green-dark/70">
+            {formatCourseLocation(selectedCourse)}
+          </p>
+        </header>
+      ) : (
+        <div className="mb-6">
+          <CourseSearch
+            value={selectedCourse}
+            onSelect={setSelectedCourse}
+            onClear={() => setSelectedCourse(null)}
+            label="Course:"
+            placeholder="Search for a course"
+          />
+        </div>
+      )}
 
       <form onSubmit={(e) => void handleSubmit(e)} className="space-y-3">
         <div
@@ -159,9 +195,9 @@ export function Submit() {
           />
         </div>
 
-        <div className="grid grid-cols-[1fr_4rem] gap-3">
+        <div className="grid grid-cols-[1fr_4.5rem] gap-2 sm:gap-3">
           <div>
-            <label className="mb-1 block text-sm font-medium">First Name *</label>
+            <label className={labelClass}>First Name:</label>
             <input
               required
               value={firstName}
@@ -170,7 +206,7 @@ export function Submit() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium">Last *</label>
+            <label className={labelClass}>Last Int:</label>
             <input
               required
               maxLength={1}
@@ -181,15 +217,9 @@ export function Submit() {
           </div>
         </div>
 
-        <CourseSearch
-          value={selectedCourse}
-          onSelect={setSelectedCourse}
-          onClear={() => setSelectedCourse(null)}
-        />
-
         <div className={pairedRowClass}>
           <div className={pairedCellClass}>
-            <label className={pairedLabelClass}>Date Played *</label>
+            <label className={labelClass}>Date Played:</label>
             <input
               type="date"
               required
@@ -199,23 +229,23 @@ export function Submit() {
             />
           </div>
           <div className={pairedCellClass}>
-            <label className={pairedLabelClass}>Time of Day *</label>
+            <label className={labelClass}>Time of Day:</label>
             <select
               required
               value={timeOfDay}
               onChange={(e) => setTimeOfDay(e.target.value as TimeOfDay)}
               className={compactInputClass}
             >
-              <option value="morning">☀️ AM</option>
-              <option value="midday">🌤 Mid</option>
-              <option value="afternoon">🌇 PM</option>
+              <option value="morning">AM</option>
+              <option value="midday">Mid-Day</option>
+              <option value="afternoon">PM</option>
             </select>
           </div>
         </div>
 
         <div className={pairedRowClass}>
           <div className={pairedCellClass}>
-            <label className={pairedLabelClass}>Green Fee ($)</label>
+            <label className={labelClass}>Green Fee:</label>
             <input
               type="number"
               inputMode="decimal"
@@ -227,7 +257,7 @@ export function Submit() {
             />
           </div>
           <div className={pairedCellClass}>
-            <label className={pairedLabelClass}>Pace of Play</label>
+            <label className={labelClass}>Pace of Play:</label>
             <div className="flex min-w-0 gap-1">
               <input
                 type="number"
@@ -255,66 +285,50 @@ export function Submit() {
           </div>
         </div>
 
-        <div className={pairedRowClass}>
-          <div className={pairedCellClass}>
-            <label className={pairedLabelClass}>Walking or Cart</label>
-            <TransportToggle
-              value={transport}
-              onChange={setTransport}
-            />
-          </div>
-          <div className={pairedCellClass}>
-            <label className={pairedLabelClass}>Walkability Notes</label>
-            <input
-              value={walkability}
-              onChange={(e) => setWalkability(e.target.value)}
-              placeholder="Flat and easy / Very hilly…"
-              className={compactInputClass}
-            />
-          </div>
+        <div>
+          <label className={labelClass}>Walk/Ride:</label>
+          <TransportToggle value={transport} onChange={setTransport} />
         </div>
 
-        <div className="border-t border-green-pale pt-3">
-          <h2 className="mb-3 font-display text-lg font-bold text-green-dark">
-            Course Conditions
+        <div className="border-t border-green-dark/25 pt-4">
+          <h2 className="mb-3 font-display text-xl text-green-dark">
+            Course Conditions:
           </h2>
           <div className="space-y-3">
             <div>
-              <label className="mb-1 block text-sm font-medium">Greens</label>
+              <label className={labelClass}>Greens:</label>
               <textarea
-                rows={2}
+                rows={3}
                 value={greens}
                 onChange={(e) => setGreens(e.target.value)}
-                className={inputClass}
+                className={textareaClass}
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium">Fairways</label>
+              <label className={labelClass}>Fairways:</label>
               <textarea
-                rows={2}
+                rows={3}
                 value={fairways}
                 onChange={(e) => setFairways(e.target.value)}
-                className={inputClass}
+                className={textareaClass}
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium">Maintenance Notes</label>
+              <label className={labelClass}>Maintenance Notes:</label>
               <textarea
-                rows={2}
+                rows={3}
                 value={maintenance}
                 onChange={(e) => setMaintenance(e.target.value)}
-                className={inputClass}
+                className={textareaClass}
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium">
-                Other Course Conditions &amp; Notes
-              </label>
+              <label className={labelClass}>Other Course Notes:</label>
               <textarea
-                rows={2}
+                rows={3}
                 value={otherNotes}
                 onChange={(e) => setOtherNotes(e.target.value)}
-                className={inputClass}
+                className={textareaClass}
               />
             </div>
           </div>
@@ -323,7 +337,7 @@ export function Submit() {
         <button
           type="submit"
           disabled={submitting}
-          className="min-h-12 w-full rounded-lg bg-green-dark px-4 py-3 text-base font-bold text-sand disabled:opacity-60"
+          className="min-h-12 w-full rounded-xl bg-green-dark px-4 py-3 font-display text-lg font-bold text-sand disabled:opacity-60"
         >
           {submitting ? 'Submitting…' : 'Submit Report'}
         </button>

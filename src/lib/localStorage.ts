@@ -2,6 +2,7 @@ import type { RecentCourse } from '../types'
 
 const RECENT_KEY = 'fr_recent_courses'
 const LAST_SUBMITTED_KEY = 'fr_last_submitted'
+const USER_ZIP_KEY = 'fr_user_zipcode'
 const VOTE_PREFIX = 'fr_voted_'
 
 export function getRecentCourses(): RecentCourse[] {
@@ -28,6 +29,22 @@ export function setLastSubmitted(date: string): void {
 
 export function getLastSubmitted(): string | null {
   return localStorage.getItem(LAST_SUBMITTED_KEY)
+}
+
+export function getUserZipcode(): string | null {
+  const zip = localStorage.getItem(USER_ZIP_KEY)
+  return zip && zip.length === 5 ? zip : null
+}
+
+export function setUserZipcode(zip: string): void {
+  const normalized = zip.replace(/\D/g, '').slice(0, 5)
+  if (normalized.length === 5) {
+    localStorage.setItem(USER_ZIP_KEY, normalized)
+  }
+}
+
+export function clearUserZipcode(): void {
+  localStorage.removeItem(USER_ZIP_KEY)
 }
 
 export function hasVoted(reportId: string): boolean {

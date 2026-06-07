@@ -7,10 +7,9 @@ export interface Course {
   course_name: string
   city: string
   state: string
+  zipcode: string | null
   holes: number | null
   course_type: CourseType | null
-  phone: string | null
-  website: string | null
   is_user_submitted: boolean
   is_approved: boolean
   created_at: string

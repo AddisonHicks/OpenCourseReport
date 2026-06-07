@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 const GITHUB_URL = 'https://github.com/AddisonHicks/OpenCourseReport'
 
 export function About() {
@@ -26,6 +28,15 @@ export function About() {
           courses and votes — nothing else is stored on our servers about you.
         </p>
       </div>
+
+      <p className="mb-4 text-sm">
+        <Link
+          to="/add-course"
+          className="min-h-11 inline-flex items-center font-semibold text-green-mid underline"
+        >
+          Add a course to the database
+        </Link>
+      </p>
 
       <p className="mb-4 text-sm">
         <a

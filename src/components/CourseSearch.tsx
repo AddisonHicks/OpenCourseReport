@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { searchCourses } from '../lib/courses'
+import { searchCourses, formatCourseLocation } from '../lib/courses'
 import type { Course } from '../types'
 
 interface CourseSearchProps {
@@ -77,17 +77,17 @@ export function CourseSearch({
 
   return (
     <div ref={wrapRef} className="relative">
-      <label className="mb-1 block text-sm font-medium text-green-dark">
+      <label className="mb-1 block font-display text-base text-green-dark">
         {label}
       </label>
       <input
-        type="search"
+        type="text"
         value={query}
         onChange={(e) => handleChange(e.target.value)}
         onFocus={() => results.length > 0 && setOpen(true)}
         placeholder={placeholder}
         autoComplete="off"
-        className="min-h-11 w-full rounded-lg border border-green-pale bg-white px-4 py-3 text-base text-green-dark placeholder:text-green-dark/40 focus:border-green-mid focus:outline-none focus:ring-2 focus:ring-green-mid/30"
+        className="min-h-11 w-full rounded-lg border-0 bg-white px-4 py-3 text-base text-green-dark shadow-sm placeholder:text-green-dark/40 focus:outline-none focus:ring-2 focus:ring-green-mid/40"
       />
       {loading && (
         <span className="absolute right-3 top-10 text-xs text-green-dark/50">
@@ -111,7 +111,7 @@ export function CourseSearch({
                   {c.course_name}
                 </div>
                 <div className="text-sm text-green-dark/60">
-                  {c.city}, {c.state}
+                  {formatCourseLocation(c)}
                 </div>
               </button>
             </li>

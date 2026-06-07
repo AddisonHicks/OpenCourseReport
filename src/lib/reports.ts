@@ -8,10 +8,9 @@ const REPORT_SELECT = `
     course_name,
     city,
     state,
+    zipcode,
     holes,
     course_type,
-    phone,
-    website,
     is_user_submitted,
     is_approved,
     created_at
@@ -46,6 +45,31 @@ export async function fetchReportsForCourse(
     return []
   }
   return (data ?? []) as ReportWithCourse[]
+}
+
+export async function fetchLastReportDatesByCourseIds(
+  courseIds: string[],
+): Promise<Map<string, string>> {
+  if (courseIds.length === 0) return new Map()
+
+  const { data, error } = await supabase
+    .from('reports')
+    .select('course_id, date_played, created_at')
+    .in('course_id', courseIds)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('Fetch last report dates error:', error)
+    return new Map()
+  }
+
+  const map = new Map<string, string>()
+  for (const row of data ?? []) {
+    if (!map.has(row.course_id)) {
+      map.set(row.course_id, row.date_played ?? row.created_at.split('T')[0])
+    }
+  }
+  return map
 }
 
 export async function fetchReportById(
