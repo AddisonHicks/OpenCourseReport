@@ -1,6 +1,12 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { setUserZipcode } from '../lib/localStorage'
-import { isValidZip, isZipFormatValid, normalizeZip } from '../lib/zipcode'
+import {
+  detectZipFromGeolocation,
+  geolocationZipErrorMessage,
+  isValidZip,
+  isZipFormatValid,
+  normalizeZip,
+} from '../lib/zipcode'
 
 interface UserAreaZipProps {
   userZip: string | null
@@ -12,6 +18,39 @@ export function UserAreaZip({ userZip, onZipChange }: UserAreaZipProps) {
   const [input, setInput] = useState(() => userZip ?? '')
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
+  const [detecting, setDetecting] = useState(false)
+  const autoDetectAttempted = useRef(false)
+
+  const applyZip = useCallback(
+    (zip: string) => {
+      setUserZipcode(zip)
+      setInput(zip)
+      setError('')
+      setEditing(false)
+      onZipChange(zip)
+    },
+    [onZipChange],
+  )
+
+  const detectLocation = useCallback(async () => {
+    setDetecting(true)
+    setError('')
+    const result = await detectZipFromGeolocation()
+    setDetecting(false)
+
+    if (result.zip) {
+      applyZip(result.zip)
+      return
+    }
+
+    setError(geolocationZipErrorMessage(result.error ?? 'unavailable'))
+  }, [applyZip])
+
+  useEffect(() => {
+    if (userZip || autoDetectAttempted.current) return
+    autoDetectAttempted.current = true
+    void detectLocation()
+  }, [userZip, detectLocation])
 
   const save = async () => {
     const normalized = normalizeZip(input)
@@ -26,10 +65,7 @@ export function UserAreaZip({ userZip, onZipChange }: UserAreaZipProps) {
       setError('Enter a valid US zip code.')
       return
     }
-    setUserZipcode(normalized)
-    setError('')
-    setEditing(false)
-    onZipChange(normalized)
+    applyZip(normalized)
   }
 
   if (!editing && userZip) {
@@ -56,9 +92,11 @@ export function UserAreaZip({ userZip, onZipChange }: UserAreaZipProps) {
   return (
     <div className="mb-3">
       <p className="mb-2 font-body text-sm text-green-dark/70">
-        Enter your zip code to see reports near you.
+        {detecting
+          ? 'Detecting your location…'
+          : 'Enter your zip code or use your location to see reports near you.'}
       </p>
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <input
           type="text"
           inputMode="numeric"
@@ -70,15 +108,24 @@ export function UserAreaZip({ userZip, onZipChange }: UserAreaZipProps) {
             setError('')
           }}
           placeholder="Zip code"
-          className="min-h-11 w-28 rounded-lg border-0 bg-white px-3 py-3 font-body text-base text-green-dark shadow-sm focus:outline-none focus:ring-2 focus:ring-green-mid/40"
+          disabled={detecting}
+          className="min-h-11 w-28 rounded-lg border-0 bg-white px-3 py-3 font-body text-base text-green-dark shadow-sm focus:outline-none focus:ring-2 focus:ring-green-mid/40 disabled:opacity-60"
         />
         <button
           type="button"
           onClick={() => void save()}
-          disabled={saving}
+          disabled={saving || detecting}
           className="min-h-11 rounded-lg bg-green-dark px-4 py-2 font-body text-sm font-semibold text-sand disabled:opacity-60"
         >
           {saving ? '…' : 'Save'}
+        </button>
+        <button
+          type="button"
+          onClick={() => void detectLocation()}
+          disabled={detecting || saving}
+          className="min-h-11 rounded-lg border border-green-dark/20 bg-white px-4 py-2 font-body text-sm font-semibold text-green-dark disabled:opacity-60"
+        >
+          {detecting ? 'Detecting…' : 'Use my location'}
         </button>
         {userZip && (
           <button
@@ -88,7 +135,8 @@ export function UserAreaZip({ userZip, onZipChange }: UserAreaZipProps) {
               setInput(userZip)
               setError('')
             }}
-            className="min-h-11 px-2 font-body text-sm font-semibold text-green-mid"
+            disabled={detecting}
+            className="min-h-11 px-2 font-body text-sm font-semibold text-green-mid disabled:opacity-60"
           >
             Cancel
           </button>

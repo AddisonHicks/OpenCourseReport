@@ -74,6 +74,75 @@ export function isZipFormatValid(zip: string): boolean {
   return normalizeZip(zip).length === 5
 }
 
+export type GeolocationZipError =
+  | 'unsupported'
+  | 'denied'
+  | 'unavailable'
+  | 'timeout'
+  | 'no_zip'
+
+function geolocationErrorCode(err: unknown): GeolocationZipError {
+  const code = (err as GeolocationPositionError)?.code
+  if (code === 1) return 'denied'
+  if (code === 2) return 'unavailable'
+  if (code === 3) return 'timeout'
+  if (err instanceof Error && err.message === 'unsupported') return 'unsupported'
+  return 'unavailable'
+}
+
+export function geolocationZipErrorMessage(error: GeolocationZipError): string {
+  switch (error) {
+    case 'denied':
+      return 'Location access was denied. Enter your zip code or enable location in browser settings.'
+    case 'unsupported':
+      return 'Your browser does not support location detection.'
+    case 'timeout':
+      return 'Location request timed out. Try again or enter your zip code.'
+    case 'no_zip':
+      return 'Could not find a US zip code for your location. Enter one manually.'
+    default:
+      return 'Could not detect your location. Enter your zip code manually.'
+  }
+}
+
+function requestUserGeolocation(): Promise<GeolocationPosition> {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error('unsupported'))
+      return
+    }
+    navigator.geolocation.getCurrentPosition(resolve, reject, {
+      enableHighAccuracy: false,
+      timeout: 12_000,
+      maximumAge: 300_000,
+    })
+  })
+}
+
+export async function detectZipFromGeolocation(): Promise<{
+  zip: string | null
+  error?: GeolocationZipError
+}> {
+  try {
+    const position = await requestUserGeolocation()
+    const zipcodes = await getZipcodes()
+    const match = zipcodes.lookupByCoords(
+      position.coords.latitude,
+      position.coords.longitude,
+    )
+    if (!match?.zip) {
+      return { zip: null, error: 'no_zip' }
+    }
+    const zip = normalizeZip(match.zip)
+    if (!(await isValidZip(zip))) {
+      return { zip: null, error: 'no_zip' }
+    }
+    return { zip }
+  } catch (err) {
+    return { zip: null, error: geolocationErrorCode(err) }
+  }
+}
+
 /** Pick a representative zip for a city/state (exact city name match). */
 export async function suggestZipFromCityState(
   city: string,
