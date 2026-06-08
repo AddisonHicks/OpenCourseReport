@@ -15,7 +15,8 @@ export async function searchCourses(query: string): Promise<Course[]> {
   const { data, error } = await supabase
     .from('courses')
     .select('*')
-    .or(`course_name.ilike.%${q}%,city.ilike.%${q}%,zipcode.ilike.%${q}%`)    .eq('is_approved', true)
+    .or(`course_name.ilike.%${q}%,city.ilike.%${q}%,zipcode.ilike.%${q}%`)
+    .eq('is_approved', true)
     .order('course_name')
     .limit(8)
 

@@ -32,9 +32,13 @@ export function BrowseCourseRow({
           {formatCourseLocation(course)}
         </div>
       </div>
-      <time className="shrink-0 font-body text-sm text-green-dark/55">
-        {lastReportDate ? formatDateNumeric(lastReportDate) : '—'}
-      </time>
+      <span className="shrink-0 font-body text-sm text-green-dark/55">
+        {lastReportDate ? (
+          <time dateTime={lastReportDate}>{formatDateNumeric(lastReportDate)}</time>
+        ) : (
+          'No reports yet'
+        )}
+      </span>
     </button>
   )
 }
