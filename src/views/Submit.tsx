@@ -199,7 +199,7 @@ export function Submit() {
           />
         </div>
 
-        <div className="grid grid-cols-[minmax(0,9.5rem)_auto] gap-2 sm:grid-cols-[minmax(0,11rem)_auto] sm:gap-3">
+        <div className="grid grid-cols-[minmax(0,12rem)_auto] gap-2 sm:grid-cols-[minmax(0,14rem)_auto] sm:gap-3">
           <div className="min-w-0">
             <FieldLabel required>First Name:</FieldLabel>
             <input
@@ -216,7 +216,7 @@ export function Submit() {
               maxLength={1}
               value={lastInitial}
               onChange={(e) => setLastInitial(e.target.value.slice(0, 1))}
-              className={`${inputClass} w-[4.5rem] text-center uppercase`}
+              className={`${inputClass} w-11 px-1 text-center uppercase`}
             />
           </div>
         </div>
