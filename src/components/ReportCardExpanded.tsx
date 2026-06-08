@@ -90,7 +90,7 @@ export function ReportCardExpanded({
 
       <dl>
         <Field label="Greens" value={report.greens_report} />
-        <Field label="Fairways" value={report.fairways_report} />
+        <Field label="Fairways & Tees" value={report.fairways_tees_report} />
         <Field label="Maintenance" value={report.maintenance_notes} />
         <Field label="Other conditions" value={report.other_conditions_notes} />
         <Field label="Walkability" value={report.walkability_notes} />

@@ -116,7 +116,10 @@ export function ReportModal({ report, onClose }: ReportModalProps) {
           </h3>
           <div className="space-y-3 text-base">
             <ConditionBlock label="Greens" value={report.greens_report} />
-            <ConditionBlock label="Fairways" value={report.fairways_report} />
+            <ConditionBlock
+              label="Fairways & Tees"
+              value={report.fairways_tees_report}
+            />
             <ConditionBlock
               label="Maintenance"
               value={report.maintenance_notes}

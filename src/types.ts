@@ -29,7 +29,7 @@ export interface Report {
   holes_played: HolesPlayed | null
   pace_of_play: number | null
   greens_report: string | null
-  fairways_report: string | null
+  fairways_tees_report: string | null
   maintenance_notes: string | null
   other_conditions_notes: string | null
   helpful_votes: number

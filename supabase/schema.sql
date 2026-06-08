@@ -29,7 +29,7 @@ create table if not exists reports (
   holes_played integer check (holes_played in (9, 18)),
   pace_of_play integer,
   greens_report text,
-  fairways_report text,
+  fairways_tees_report text,
   maintenance_notes text,
   other_conditions_notes text,
   helpful_votes integer default 0,
@@ -51,6 +51,7 @@ create index if not exists idx_courses_approved on courses(is_approved);
 create index if not exists idx_courses_zipcode on courses(zipcode);
 
 -- Migration for existing databases:
+-- alter table reports rename column fairways_report to fairways_tees_report;
 -- alter table reports add column if not exists holes_played integer check (holes_played in (9, 18));
 -- alter table courses add column if not exists zipcode text;
 -- create index if not exists idx_courses_zipcode on courses(zipcode);

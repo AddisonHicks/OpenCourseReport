@@ -36,7 +36,7 @@ export function Submit() {
   const [paceMinutes, setPaceMinutes] = useState('')
   const [transport, setTransport] = useState<TransportMode | null>(null)
   const [greens, setGreens] = useState('')
-  const [fairways, setFairways] = useState('')
+  const [fairwaysTees, setFairwaysTees] = useState('')
   const [maintenance, setMaintenance] = useState('')
   const [otherNotes, setOtherNotes] = useState('')
   const [honeypot, setHoneypot] = useState('')
@@ -71,7 +71,7 @@ export function Submit() {
     setPaceMinutes('')
     setTransport(null)
     setGreens('')
-    setFairways('')
+    setFairwaysTees('')
     setMaintenance('')
     setOtherNotes('')
   }
@@ -111,7 +111,7 @@ export function Submit() {
       holes_played: holesPlayed,
       pace_of_play: paceTotal,
       greens_report: greens.trim() || null,
-      fairways_report: fairways.trim() || null,
+      fairways_tees_report: fairwaysTees.trim() || null,
       maintenance_notes: maintenance.trim() || null,
       other_conditions_notes: otherNotes.trim() || null,
     })
@@ -316,11 +316,11 @@ export function Submit() {
               />
             </div>
             <div>
-              <FieldLabel>Fairways:</FieldLabel>
+              <FieldLabel>Fairways & Tees:</FieldLabel>
               <textarea
                 rows={3}
-                value={fairways}
-                onChange={(e) => setFairways(e.target.value)}
+                value={fairwaysTees}
+                onChange={(e) => setFairwaysTees(e.target.value)}
                 className={textareaClass}
               />
             </div>
