@@ -2,6 +2,15 @@ import type { ReportWithCourse, ReportDisplay } from '../types'
 
 const NINETY_DAYS_MS = 90 * 24 * 60 * 60 * 1000
 
+/** Today's date in the user's local timezone (`YYYY-MM-DD`). */
+export function todayLocalDateString(): string {
+  const d = new Date()
+  const yyyy = d.getFullYear()
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  return `${yyyy}-${mm}-${dd}`
+}
+
 export function getNinetyDaysAgo(): string {
   const d = new Date()
   d.setDate(d.getDate() - 90)
@@ -13,6 +22,23 @@ export function isWithin90Days(datePlayed: string): boolean {
   const cutoff = new Date()
   cutoff.setTime(cutoff.getTime() - NINETY_DAYS_MS)
   return played >= cutoff
+}
+
+export function compareByDatePlayedDesc(
+  a: Pick<ReportWithCourse, 'date_played' | 'created_at'>,
+  b: Pick<ReportWithCourse, 'date_played' | 'created_at'>,
+): number {
+  const playedDiff =
+    new Date(b.date_played + 'T12:00:00').getTime() -
+    new Date(a.date_played + 'T12:00:00').getTime()
+  if (playedDiff !== 0) return playedDiff
+  return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+}
+
+export function sortReportsByDatePlayed<T extends ReportWithCourse>(
+  reports: T[],
+): T[] {
+  return [...reports].sort(compareByDatePlayedDesc)
 }
 
 /**
@@ -120,6 +146,17 @@ export function formatDateNumeric(dateStr: string): string {
 export function formatPrice(price: number | null): string {
   if (price == null) return '—'
   return `$${Math.round(price)}`
+}
+
+export function formatGreenFee(
+  price: number | null,
+  holesPlayed: number | null,
+): string {
+  if (price == null) return '—'
+  if (holesPlayed === 9 || holesPlayed === 18) {
+    return `${formatPrice(price)} (${holesPlayed} holes)`
+  }
+  return formatPrice(price)
 }
 
 export function submitterName(first: string, lastInitial: string): string {

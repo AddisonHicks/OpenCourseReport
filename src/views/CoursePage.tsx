@@ -3,7 +3,11 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { BrowseCourseRow } from '../components/BrowseCourseRow'
 import { ReportModal } from '../components/ReportModal'
 import { getCourseById, formatCourseLocation } from '../lib/courses'
-import { apply90DayFilter, formatDateNumeric } from '../lib/reportQueries'
+import {
+  apply90DayFilter,
+  formatDateNumeric,
+  sortReportsByDatePlayed,
+} from '../lib/reportQueries'
 import { fetchReportsForCourse } from '../lib/reports'
 import type { Course, ReportDisplay } from '../types'
 
@@ -32,11 +36,7 @@ export function CoursePage() {
   }, [load])
 
   const sortedReports = useMemo(
-    () =>
-      [...reports].sort(
-        (a, b) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-      ),
+    () => sortReportsByDatePlayed(reports),
     [reports],
   )
 
@@ -69,10 +69,12 @@ export function CoursePage() {
             {formatCourseLocation(course)}
           </p>
         </div>
-        <p className="shrink-0 pt-1 text-right font-display text-sm text-green-dark">
-          Last Report:{' '}
-          {lastReport ? formatDateNumeric(lastReport.date_played) : '—'}
-        </p>
+        <div className="shrink-0 pt-1 text-right font-display text-sm text-green-dark">
+          <p>Last Report:</p>
+          <p className="font-semibold">
+            {lastReport ? formatDateNumeric(lastReport.date_played) : '—'}
+          </p>
+        </div>
       </header>
 
       <button

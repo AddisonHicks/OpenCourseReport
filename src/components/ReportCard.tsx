@@ -4,7 +4,7 @@ import type { ReportDisplay } from '../types'
 import {
   formatDate,
   formatPace,
-  formatPrice,
+  formatGreenFee,
   submitterName,
   timeOfDayEmoji,
 } from '../lib/reportQueries'
@@ -109,7 +109,7 @@ export function ReportCard({ report }: ReportCardProps) {
         )}
         {report.price_paid != null && (
           <span className="rounded-full bg-green-pale/80 px-3 py-1 font-medium">
-            {formatPrice(report.price_paid)}
+            {formatGreenFee(report.price_paid, report.holes_played)}
           </span>
         )}
         <span className="rounded-full bg-green-pale/80 px-3 py-1 font-medium">

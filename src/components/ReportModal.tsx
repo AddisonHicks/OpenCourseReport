@@ -3,7 +3,7 @@ import type { ReportDisplay } from '../types'
 import {
   formatDateNumeric,
   formatPace,
-  formatPrice,
+  formatGreenFee,
   submitterName,
   timeOfDayLabel,
 } from '../lib/reportQueries'
@@ -96,7 +96,7 @@ export function ReportModal({ report, onClose }: ReportModalProps) {
             </p>
             <p>
               <span className="font-semibold">Green Fee:</span>{' '}
-              {formatPrice(report.price_paid)}
+              {formatGreenFee(report.price_paid, report.holes_played)}
             </p>
             <p>
               <span className="font-semibold">Pace of Play:</span>{' '}

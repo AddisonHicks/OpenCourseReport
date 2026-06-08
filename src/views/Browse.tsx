@@ -101,11 +101,15 @@ export function Browse() {
           )}
 
           {!showLoading && nearbyReports.length > 0 && (
-            <div className="space-y-3">
+            <div className="overflow-hidden rounded-2xl bg-white shadow-sm">
+              <div className="flex items-center justify-between border-b border-green-dark/10 px-4 py-2 font-body text-xs text-green-dark/50">
+                <span>Course Name, Location</span>
+                <span>Last Report</span>
+              </div>
               {nearbyReports.map((r) => (
                 <BrowseCourseRow
                   key={r.course_id}
-                  variant="card"
+                  variant="list"
                   course={r.courses}
                   lastReportDate={r.date_played}
                   onSelect={() => navigate(`/course/${r.course_id}`)}

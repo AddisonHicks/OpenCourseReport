@@ -2,10 +2,9 @@ import { supabase } from './supabase'
 import type { Course } from '../types'
 
 export function formatCourseLocation(
-  course: Pick<Course, 'city' | 'state' | 'zipcode'>,
+  course: Pick<Course, 'city' | 'state'>,
 ): string {
-  const base = `${course.city}, ${course.state}`
-  return course.zipcode?.trim() ? `${base} ${course.zipcode.trim()}` : base
+  return `${course.city}, ${course.state}`
 }
 
 export async function searchCourses(query: string): Promise<Course[]> {

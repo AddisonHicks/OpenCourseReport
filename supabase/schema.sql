@@ -26,6 +26,7 @@ create table if not exists reports (
   transport_mode text check (transport_mode in ('walking', 'cart')),
   walkability_notes text,
   price_paid numeric,
+  holes_played integer check (holes_played in (9, 18)),
   pace_of_play integer,
   greens_report text,
   fairways_report text,
@@ -50,6 +51,7 @@ create index if not exists idx_courses_approved on courses(is_approved);
 create index if not exists idx_courses_zipcode on courses(zipcode);
 
 -- Migration for existing databases:
+-- alter table reports add column if not exists holes_played integer check (holes_played in (9, 18));
 -- alter table courses add column if not exists zipcode text;
 -- create index if not exists idx_courses_zipcode on courses(zipcode);
 -- alter table courses drop column if exists phone;

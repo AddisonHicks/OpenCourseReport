@@ -18,7 +18,7 @@ export function SiteHeader() {
         OpenCourse Report
       </Link>
       {isHome && (
-        <p className="mt-2 font-display text-base leading-snug text-sand/90">
+        <p className="mt-1 font-display text-sm leading-snug text-sand/85">
           Real course conditions submitted by real golfers
         </p>
       )}

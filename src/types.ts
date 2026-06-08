@@ -1,5 +1,6 @@
 export type TimeOfDay = 'morning' | 'midday' | 'afternoon'
 export type TransportMode = 'walking' | 'cart'
+export type HolesPlayed = 9 | 18
 export type CourseType = 'Public' | 'Semi-Private' | 'Private'
 
 export interface Course {
@@ -25,6 +26,7 @@ export interface Report {
   transport_mode: TransportMode | null
   walkability_notes: string | null
   price_paid: number | null
+  holes_played: HolesPlayed | null
   pace_of_play: number | null
   greens_report: string | null
   fairways_report: string | null

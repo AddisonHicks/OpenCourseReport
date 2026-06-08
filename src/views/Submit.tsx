@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { CourseSearch } from '../components/CourseSearch'
+import { HolesPlayedToggle } from '../components/HolesPlayedToggle'
 import { TransportToggle } from '../components/TransportToggle'
 import { SubmitConfirmation } from '../components/SubmitConfirmation'
 import { useToast } from '../context/ToastContext'
 import { getCourseById, formatCourseLocation } from '../lib/courses'
 import { addRecentCourse, setLastSubmitted, setUserZipcode } from '../lib/localStorage'
+import { todayLocalDateString } from '../lib/reportQueries'
 import { supabase } from '../lib/supabase'
-import type { Course, TimeOfDay, TransportMode } from '../types'
+import type { Course, HolesPlayed, TimeOfDay, TransportMode } from '../types'
 
 interface SubmitLocationState {
   courseId?: string
@@ -25,11 +27,10 @@ export function Submit() {
   const [firstName, setFirstName] = useState('')
   const [lastInitial, setLastInitial] = useState('')
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
-  const [datePlayed, setDatePlayed] = useState(
-    () => new Date().toISOString().split('T')[0],
-  )
+  const [datePlayed, setDatePlayed] = useState(todayLocalDateString)
   const [timeOfDay, setTimeOfDay] = useState<TimeOfDay>('morning')
   const [pricePaid, setPricePaid] = useState('')
+  const [holesPlayed, setHolesPlayed] = useState<HolesPlayed>(18)
   const [paceHours, setPaceHours] = useState('')
   const [paceMinutes, setPaceMinutes] = useState('')
   const [transport, setTransport] = useState<TransportMode | null>(null)
@@ -61,9 +62,10 @@ export function Submit() {
   const resetForm = () => {
     setFirstName('')
     setLastInitial('')
-    setDatePlayed(new Date().toISOString().split('T')[0])
+    setDatePlayed(todayLocalDateString())
     setTimeOfDay('morning')
     setPricePaid('')
+    setHolesPlayed(18)
     setPaceHours('')
     setPaceMinutes('')
     setTransport(null)
@@ -105,6 +107,7 @@ export function Submit() {
       transport_mode: transport,
       walkability_notes: null,
       price_paid: pricePaid ? parseFloat(pricePaid) : null,
+      holes_played: holesPlayed,
       pace_of_play: paceTotal,
       greens_report: greens.trim() || null,
       fairways_report: fairways.trim() || null,
@@ -224,6 +227,7 @@ export function Submit() {
               type="date"
               required
               value={datePlayed}
+              max={todayLocalDateString()}
               onChange={(e) => setDatePlayed(e.target.value)}
               className={compactInputClass}
             />
@@ -257,6 +261,17 @@ export function Submit() {
             />
           </div>
           <div className={pairedCellClass}>
+            <label className={labelClass}>Holes Played:</label>
+            <HolesPlayedToggle value={holesPlayed} onChange={setHolesPlayed} />
+          </div>
+        </div>
+
+        <div className={pairedRowClass}>
+          <div className={pairedCellClass}>
+            <label className={labelClass}>Walk/Ride:</label>
+            <TransportToggle value={transport} onChange={setTransport} />
+          </div>
+          <div className={pairedCellClass}>
             <label className={labelClass}>Pace of Play:</label>
             <div className="flex min-w-0 gap-1">
               <input
@@ -283,11 +298,6 @@ export function Submit() {
               />
             </div>
           </div>
-        </div>
-
-        <div>
-          <label className={labelClass}>Walk/Ride:</label>
-          <TransportToggle value={transport} onChange={setTransport} />
         </div>
 
         <div className="border-t border-green-dark/25 pt-4">

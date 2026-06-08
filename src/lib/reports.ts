@@ -56,6 +56,7 @@ export async function fetchLastReportDatesByCourseIds(
     .from('reports')
     .select('course_id, date_played, created_at')
     .in('course_id', courseIds)
+    .order('date_played', { ascending: false })
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -66,7 +67,7 @@ export async function fetchLastReportDatesByCourseIds(
   const map = new Map<string, string>()
   for (const row of data ?? []) {
     if (!map.has(row.course_id)) {
-      map.set(row.course_id, row.date_played ?? row.created_at.split('T')[0])
+      map.set(row.course_id, row.date_played)
     }
   }
   return map
