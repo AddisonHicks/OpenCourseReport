@@ -1,5 +1,12 @@
 import { supabase } from './supabase'
+import { getStateName, US_STATES } from './usStates'
 import type { Course } from '../types'
+
+export interface CoursesByState {
+  stateAbbr: string
+  stateName: string
+  courses: Course[]
+}
 
 export function formatCourseLocation(
   course: Pick<Course, 'city' | 'state'>,
@@ -24,6 +31,72 @@ export async function searchCourses(query: string): Promise<Course[]> {
     return []
   }
   return (data ?? []) as Course[]
+}
+
+export async function fetchAllApprovedCourses(): Promise<Course[]> {
+  const pageSize = 1000
+  const all: Course[] = []
+  let from = 0
+
+  while (true) {
+    const { data, error } = await supabase
+      .from('courses')
+      .select('*')
+      .eq('is_approved', true)
+      .order('state')
+      .order('course_name')
+      .range(from, from + pageSize - 1)
+
+    if (error) {
+      console.error('Fetch all courses error:', error)
+      break
+    }
+    if (!data?.length) break
+
+    all.push(...(data as Course[]))
+    if (data.length < pageSize) break
+    from += pageSize
+  }
+
+  return all
+}
+
+export function groupCoursesByState(courses: Course[]): CoursesByState[] {
+  const byState = new Map<string, Course[]>()
+
+  for (const course of courses) {
+    const abbr = course.state.trim().toUpperCase()
+    const list = byState.get(abbr) ?? []
+    list.push(course)
+    byState.set(abbr, list)
+  }
+
+  const groups: CoursesByState[] = []
+
+  for (const { abbr, name } of US_STATES) {
+    const stateCourses = byState.get(abbr)
+    if (!stateCourses?.length) continue
+    groups.push({
+      stateAbbr: abbr,
+      stateName: name,
+      courses: stateCourses.sort((a, b) =>
+        a.course_name.localeCompare(b.course_name),
+      ),
+    })
+  }
+
+  for (const [abbr, stateCourses] of byState) {
+    if (US_STATES.some((s) => s.abbr === abbr)) continue
+    groups.push({
+      stateAbbr: abbr,
+      stateName: getStateName(abbr),
+      courses: stateCourses.sort((a, b) =>
+        a.course_name.localeCompare(b.course_name),
+      ),
+    })
+  }
+
+  return groups
 }
 
 export async function getCourseById(id: string): Promise<Course | null> {

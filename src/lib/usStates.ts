@@ -60,6 +60,11 @@ export function isValidUsStateAbbr(value: string): value is UsStateAbbr {
   return VALID_ABBRS.has(value.toUpperCase())
 }
 
+export function getStateName(abbr: string): string {
+  const upper = abbr.trim().toUpperCase()
+  return US_STATES.find((s) => s.abbr === upper)?.name ?? abbr
+}
+
 export function normalizeUsStateAbbr(value: string): UsStateAbbr | null {
   const upper = value.trim().toUpperCase()
   if (isValidUsStateAbbr(upper)) return upper

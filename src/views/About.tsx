@@ -31,6 +31,15 @@ export function About() {
 
       <p className="mb-4 text-sm">
         <Link
+          to="/courses"
+          className="min-h-11 inline-flex items-center font-semibold text-green-mid underline"
+        >
+          Browse all courses by state
+        </Link>
+      </p>
+
+      <p className="mb-4 text-sm">
+        <Link
           to="/add-course"
           className="min-h-11 inline-flex items-center font-semibold text-green-mid underline"
         >
