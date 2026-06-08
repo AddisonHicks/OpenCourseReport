@@ -10,7 +10,7 @@ export function FieldLabel({
   className = 'mb-1 block font-display text-base text-green-dark',
 }: FieldLabelProps) {
   return (
-    <label className={className}>
+    <label className={`${className}${required ? ' whitespace-nowrap' : ''}`}>
       {children}
       {required && (
         <span className="text-green-mid" aria-hidden="true">
