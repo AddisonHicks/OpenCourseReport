@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { FieldLabel } from './FieldLabel'
 import { searchCourses, formatCourseLocation } from '../lib/courses'
 import type { Course } from '../types'
 
@@ -9,6 +10,7 @@ interface CourseSearchProps {
   onQueryChange?: (query: string) => void
   placeholder?: string
   label?: string
+  required?: boolean
 }
 
 export function CourseSearch({
@@ -18,6 +20,7 @@ export function CourseSearch({
   onQueryChange,
   placeholder = 'Search courses…',
   label = 'Course Name',
+  required = false,
 }: CourseSearchProps) {
   const [query, setQuery] = useState(value?.course_name ?? '')
   const [results, setResults] = useState<Course[]>([])
@@ -77,9 +80,7 @@ export function CourseSearch({
 
   return (
     <div ref={wrapRef} className="relative">
-      <label className="mb-1 block font-display text-base text-green-dark">
-        {label}
-      </label>
+      <FieldLabel required={required}>{label}</FieldLabel>
       <input
         type="text"
         value={query}

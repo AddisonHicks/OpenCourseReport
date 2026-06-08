@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { CourseSearch } from '../components/CourseSearch'
+import { FieldLabel } from '../components/FieldLabel'
 import { HolesPlayedToggle } from '../components/HolesPlayedToggle'
 import { TransportToggle } from '../components/TransportToggle'
 import { SubmitConfirmation } from '../components/SubmitConfirmation'
@@ -139,7 +140,6 @@ export function Submit() {
     navigate('/submit', { replace: true })
   }
 
-  const labelClass = 'mb-1 block font-display text-base text-green-dark'
   const inputClass =
     'min-h-11 w-full min-w-0 max-w-full rounded-lg border-0 bg-white px-3 py-3 text-base text-green-dark shadow-sm focus:outline-none focus:ring-2 focus:ring-green-mid/40'
   const compactInputClass =
@@ -178,6 +178,7 @@ export function Submit() {
             onClear={() => setSelectedCourse(null)}
             label="Course:"
             placeholder="Search for a course"
+            required
           />
         </div>
       )}
@@ -200,7 +201,7 @@ export function Submit() {
 
         <div className="grid grid-cols-[1fr_4.5rem] gap-2 sm:gap-3">
           <div>
-            <label className={labelClass}>First Name:</label>
+            <FieldLabel required>First Name:</FieldLabel>
             <input
               required
               value={firstName}
@@ -209,7 +210,7 @@ export function Submit() {
             />
           </div>
           <div>
-            <label className={labelClass}>Last Int:</label>
+            <FieldLabel required>Last Int:</FieldLabel>
             <input
               required
               maxLength={1}
@@ -222,7 +223,7 @@ export function Submit() {
 
         <div className={pairedRowClass}>
           <div className={pairedCellClass}>
-            <label className={labelClass}>Date Played:</label>
+            <FieldLabel required>Date Played:</FieldLabel>
             <input
               type="date"
               required
@@ -233,7 +234,7 @@ export function Submit() {
             />
           </div>
           <div className={pairedCellClass}>
-            <label className={labelClass}>Time of Day:</label>
+            <FieldLabel required>Time of Day:</FieldLabel>
             <select
               required
               value={timeOfDay}
@@ -249,7 +250,7 @@ export function Submit() {
 
         <div className={pairedRowClass}>
           <div className={pairedCellClass}>
-            <label className={labelClass}>Green Fee:</label>
+            <FieldLabel>Green Fee:</FieldLabel>
             <input
               type="number"
               inputMode="decimal"
@@ -261,18 +262,18 @@ export function Submit() {
             />
           </div>
           <div className={pairedCellClass}>
-            <label className={labelClass}>Holes Played:</label>
+            <FieldLabel>Holes Played:</FieldLabel>
             <HolesPlayedToggle value={holesPlayed} onChange={setHolesPlayed} />
           </div>
         </div>
 
         <div className={pairedRowClass}>
           <div className={pairedCellClass}>
-            <label className={labelClass}>Walk/Ride:</label>
+            <FieldLabel>Walk/Ride:</FieldLabel>
             <TransportToggle value={transport} onChange={setTransport} />
           </div>
           <div className={pairedCellClass}>
-            <label className={labelClass}>Pace of Play:</label>
+            <FieldLabel>Pace of Play:</FieldLabel>
             <div className="flex min-w-0 gap-1">
               <input
                 type="number"
@@ -306,7 +307,7 @@ export function Submit() {
           </h2>
           <div className="space-y-3">
             <div>
-              <label className={labelClass}>Greens:</label>
+              <FieldLabel>Greens:</FieldLabel>
               <textarea
                 rows={3}
                 value={greens}
@@ -315,7 +316,7 @@ export function Submit() {
               />
             </div>
             <div>
-              <label className={labelClass}>Fairways:</label>
+              <FieldLabel>Fairways:</FieldLabel>
               <textarea
                 rows={3}
                 value={fairways}
@@ -324,7 +325,7 @@ export function Submit() {
               />
             </div>
             <div>
-              <label className={labelClass}>Maintenance Notes:</label>
+              <FieldLabel>Maintenance Notes:</FieldLabel>
               <textarea
                 rows={3}
                 value={maintenance}
@@ -333,7 +334,7 @@ export function Submit() {
               />
             </div>
             <div>
-              <label className={labelClass}>Other Course Notes:</label>
+              <FieldLabel>Other Course Notes:</FieldLabel>
               <textarea
                 rows={3}
                 value={otherNotes}
