@@ -67,7 +67,7 @@ export function ReportModal({ report, onClose }: ReportModalProps) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-start justify-between gap-3">
-          <div>
+          <div className="min-w-0 flex-1 text-left">
             <h2
               id="report-modal-title"
               className="font-display text-2xl font-bold text-green-dark"
@@ -80,7 +80,7 @@ export function ReportModal({ report, onClose }: ReportModalProps) {
                 onClose()
                 navigate(`/course/${report.courses.id}`)
               }}
-              className="mt-1 block font-display text-base font-semibold text-green-mid underline"
+              className="mt-1 block w-full text-left font-display text-base font-semibold text-green-mid underline"
             >
               {report.courses.course_name}
             </button>
