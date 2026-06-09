@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { BrowseCourseRow } from '../components/BrowseCourseRow'
+import { CourseReportRow } from '../components/CourseReportRow'
 import { ReportModal } from '../components/ReportModal'
 import { getCourseById, formatCourseLocation } from '../lib/courses'
 import {
@@ -98,10 +98,8 @@ export function CoursePage() {
             No reports for this course yet.
           </div>
         ) : (
-          <BrowseCourseRow
-            variant="card"
-            course={course}
-            lastReportDate={lastReport.date_played}
+          <CourseReportRow
+            report={lastReport}
             onSelect={() => setActiveReport(lastReport)}
           />
         )}
@@ -114,11 +112,9 @@ export function CoursePage() {
           </h2>
           <div className="space-y-2">
             {recentReports.map((report) => (
-              <BrowseCourseRow
+              <CourseReportRow
                 key={report.id}
-                variant="card"
-                course={course}
-                lastReportDate={report.date_played}
+                report={report}
                 onSelect={() => setActiveReport(report)}
               />
             ))}

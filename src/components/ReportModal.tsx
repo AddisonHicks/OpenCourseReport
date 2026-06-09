@@ -1,9 +1,12 @@
 import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import type { ReportDisplay } from '../types'
 import {
   formatDateNumeric,
+  formatDateWithWeekday,
+  formatHolesPlayed,
   formatPace,
-  formatGreenFee,
+  formatPrice,
   submitterName,
   timeOfDayLabel,
 } from '../lib/reportQueries'
@@ -29,8 +32,9 @@ function ConditionBlock({
 }
 
 export function ReportModal({ report, onClose }: ReportModalProps) {
-  const submittedDate = formatDateNumeric(report.created_at.split('T')[0])
-  const playedDate = formatDateNumeric(report.date_played)
+  const navigate = useNavigate()
+  const playedDate = formatDateWithWeekday(report.date_played)
+  const reportTitleDate = formatDateNumeric(report.date_played)
   const transportLabel =
     report.transport_mode === 'walking'
       ? 'Walk'
@@ -68,8 +72,18 @@ export function ReportModal({ report, onClose }: ReportModalProps) {
               id="report-modal-title"
               className="font-display text-2xl font-bold text-green-dark"
             >
-              {submittedDate} Report
+              {reportTitleDate} Report
             </h2>
+            <button
+              type="button"
+              onClick={() => {
+                onClose()
+                navigate(`/course/${report.courses.id}`)
+              }}
+              className="mt-1 block font-display text-base font-semibold text-green-mid underline"
+            >
+              {report.courses.course_name}
+            </button>
             <p className="mt-1 text-base text-green-dark">
               Submitted By:{' '}
               {submitterName(report.first_name, report.last_initial)}
@@ -85,24 +99,26 @@ export function ReportModal({ report, onClose }: ReportModalProps) {
           </button>
         </div>
 
-        <div className="space-y-2 text-base text-green-dark">
-          <div className="grid grid-cols-2 gap-x-3 gap-y-2">
-            <p>
-              <span className="font-semibold">Played:</span> {playedDate}
-            </p>
-            <p>
-              <span className="font-semibold">Time of Day:</span>{' '}
-              {timeOfDayLabel(report.time_of_day)}
-            </p>
-            <p>
-              <span className="font-semibold">Green Fee:</span>{' '}
-              {formatGreenFee(report.price_paid, report.holes_played)}
-            </p>
-            <p>
-              <span className="font-semibold">Pace of Play:</span>{' '}
-              {formatPace(report.pace_of_play)}
-            </p>
-          </div>
+        <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-base text-green-dark">
+          <p>
+            <span className="font-semibold">Played:</span> {playedDate}
+          </p>
+          <p>
+            <span className="font-semibold">Time of Day:</span>{' '}
+            {timeOfDayLabel(report.time_of_day)}
+          </p>
+          <p>
+            <span className="font-semibold">Green Fee:</span>{' '}
+            {formatPrice(report.price_paid)}
+          </p>
+          <p>
+            <span className="font-semibold">Holes Played:</span>{' '}
+            {formatHolesPlayed(report.holes_played)}
+          </p>
+          <p>
+            <span className="font-semibold">Pace of Play:</span>{' '}
+            {formatPace(report.pace_of_play)}
+          </p>
           <p>
             <span className="font-semibold">Walk or Ride:</span> {transportLabel}
           </p>

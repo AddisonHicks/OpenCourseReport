@@ -1,12 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { searchCourses } from '../lib/courses'
 import { fetchLastReportDatesByCourseIds } from '../lib/reports'
 import type { Course } from '../types'
 import { BrowseCourseRow } from './BrowseCourseRow'
 
 export function HomeSearchPanel() {
-  const navigate = useNavigate()
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<Course[]>([])
   const [lastReportDates, setLastReportDates] = useState<Map<string, string>>(
@@ -41,10 +39,6 @@ export function HomeSearchPanel() {
     setResults([])
     setLastReportDates(new Map())
   }, [])
-
-  const goToCourse = (courseId: string) => {
-    navigate(`/course/${courseId}`)
-  }
 
   const showResults = query.trim().length >= 3
 
@@ -101,7 +95,7 @@ export function HomeSearchPanel() {
                   key={course.id}
                   course={course}
                   lastReportDate={lastReportDates.get(course.id) ?? null}
-                  onSelect={() => goToCourse(course.id)}
+                  to={`/course/${course.id}`}
                 />
               ))}
           </>

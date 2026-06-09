@@ -31,7 +31,7 @@ export function Submit() {
   const [datePlayed, setDatePlayed] = useState(todayLocalDateString)
   const [timeOfDay, setTimeOfDay] = useState<TimeOfDay>('morning')
   const [pricePaid, setPricePaid] = useState('')
-  const [holesPlayed, setHolesPlayed] = useState<HolesPlayed>(18)
+  const [holesPlayed, setHolesPlayed] = useState<HolesPlayed | null>(null)
   const [paceHours, setPaceHours] = useState('')
   const [paceMinutes, setPaceMinutes] = useState('')
   const [transport, setTransport] = useState<TransportMode | null>(null)
@@ -66,7 +66,7 @@ export function Submit() {
     setDatePlayed(todayLocalDateString())
     setTimeOfDay('morning')
     setPricePaid('')
-    setHolesPlayed(18)
+    setHolesPlayed(null)
     setPaceHours('')
     setPaceMinutes('')
     setTransport(null)
@@ -140,10 +140,10 @@ export function Submit() {
     navigate('/submit', { replace: true })
   }
 
-  const inputClass =
-    'min-h-11 w-full min-w-0 max-w-full rounded-lg border-0 bg-white px-3 py-3 text-base text-green-dark shadow-sm focus:outline-none focus:ring-2 focus:ring-green-mid/40'
-  const compactInputClass =
-    'min-h-11 w-full min-w-0 max-w-full rounded-lg border-0 bg-white px-2 py-3 text-base text-green-dark shadow-sm focus:outline-none focus:ring-2 focus:ring-green-mid/40 sm:px-3'
+  const fieldClass =
+    'h-11 w-full min-w-0 max-w-full rounded-lg border-0 bg-white px-3 text-base text-green-dark shadow-sm focus:outline-none focus:ring-2 focus:ring-green-mid/40'
+  const compactFieldClass =
+    'h-11 w-full min-w-0 max-w-full rounded-lg border-0 bg-white px-2 text-base text-green-dark shadow-sm focus:outline-none focus:ring-2 focus:ring-green-mid/40 sm:px-3'
   const textareaClass =
     'min-h-24 w-full rounded-lg border-0 bg-white px-3 py-3 text-base text-green-dark shadow-sm focus:outline-none focus:ring-2 focus:ring-green-mid/40'
   const pairedRowClass = 'grid min-w-0 grid-cols-2 gap-2 sm:gap-3'
@@ -206,7 +206,7 @@ export function Submit() {
               required
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
-              className={inputClass}
+              className={fieldClass}
             />
           </div>
           <div className={pairedCellClass}>
@@ -216,7 +216,7 @@ export function Submit() {
               maxLength={1}
               value={lastInitial}
               onChange={(e) => setLastInitial(e.target.value.slice(0, 1))}
-              className={`${compactInputClass} text-center uppercase`}
+              className={`${compactFieldClass} text-center uppercase`}
             />
           </div>
         </div>
@@ -230,7 +230,7 @@ export function Submit() {
               value={datePlayed}
               max={todayLocalDateString()}
               onChange={(e) => setDatePlayed(e.target.value)}
-              className={compactInputClass}
+              className={compactFieldClass}
             />
           </div>
           <div className={pairedCellClass}>
@@ -239,7 +239,7 @@ export function Submit() {
               required
               value={timeOfDay}
               onChange={(e) => setTimeOfDay(e.target.value as TimeOfDay)}
-              className={compactInputClass}
+              className={compactFieldClass}
             >
               <option value="morning">AM</option>
               <option value="midday">Mid-Day</option>
@@ -258,7 +258,7 @@ export function Submit() {
               step="0.01"
               value={pricePaid}
               onChange={(e) => setPricePaid(e.target.value)}
-              className={compactInputClass}
+              className={compactFieldClass}
             />
           </div>
           <div className={pairedCellClass}>
@@ -284,7 +284,7 @@ export function Submit() {
                 placeholder="hr"
                 value={paceHours}
                 onChange={(e) => setPaceHours(e.target.value)}
-                className={`${compactInputClass} min-w-0 flex-1`}
+                className={`${compactFieldClass} min-w-0 flex-1`}
               />
               <input
                 type="number"
@@ -295,7 +295,7 @@ export function Submit() {
                 placeholder="min"
                 value={paceMinutes}
                 onChange={(e) => setPaceMinutes(e.target.value)}
-                className={`${compactInputClass} min-w-0 flex-1`}
+                className={`${compactFieldClass} min-w-0 flex-1`}
               />
             </div>
           </div>

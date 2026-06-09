@@ -143,9 +143,29 @@ export function formatDateNumeric(dateStr: string): string {
   return `${mm}/${dd}/${yyyy}`
 }
 
+/** e.g. 6/08/26 (Mon) */
+export function formatDateWithWeekday(dateStr: string): string {
+  const d = new Date(dateStr.includes('T') ? dateStr : dateStr + 'T12:00:00')
+  const month = d.getMonth() + 1
+  const day = String(d.getDate()).padStart(2, '0')
+  const year = String(d.getFullYear()).slice(-2)
+  const weekday = d.toLocaleDateString('en-US', { weekday: 'short' })
+  return `${month}/${day}/${year} (${weekday})`
+}
+
 export function formatPrice(price: number | null): string {
   if (price == null) return '—'
   return `$${Math.round(price)}`
+}
+
+export function formatHolesPlayed(holes: number | null): string {
+  if (holes === 9 || holes === 18) return String(holes)
+  return '—'
+}
+
+export function formatHolesPlayedLabel(holes: number | null): string | null {
+  if (holes === 9 || holes === 18) return `${holes} holes`
+  return null
 }
 
 export function formatGreenFee(

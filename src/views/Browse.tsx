@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { BrowseCourseRow } from '../components/BrowseCourseRow'
+import { ReportModal } from '../components/ReportModal'
 import { HomeSearchPanel } from '../components/HomeSearchPanel'
 import { UserAreaZip } from '../components/UserAreaZip'
 import { getUserZipcode } from '../lib/localStorage'
@@ -33,6 +34,7 @@ export function Browse() {
   const [loading, setLoading] = useState(true)
   const [filtering, setFiltering] = useState(false)
   const [userZip, setUserZip] = useState<string | null>(() => getUserZipcode())
+  const [activeReport, setActiveReport] = useState<ReportDisplay | null>(null)
 
   const loadFeed = useCallback(async () => {
     setLoading(true)
@@ -112,13 +114,20 @@ export function Browse() {
                   variant="list"
                   course={r.courses}
                   lastReportDate={r.date_played}
-                  onSelect={() => navigate(`/course/${r.course_id}`)}
+                  onSelect={() => setActiveReport(r)}
                 />
               ))}
             </div>
           )}
         </section>
       </div>
+
+      {activeReport && (
+        <ReportModal
+          report={activeReport}
+          onClose={() => setActiveReport(null)}
+        />
+      )}
     </div>
   )
 }
