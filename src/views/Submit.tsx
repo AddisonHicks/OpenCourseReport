@@ -35,6 +35,7 @@ export function Submit() {
   const [paceHours, setPaceHours] = useState('')
   const [paceMinutes, setPaceMinutes] = useState('')
   const [transport, setTransport] = useState<TransportMode | null>(null)
+  const [walkability, setWalkability] = useState('')
   const [greens, setGreens] = useState('')
   const [fairwaysTees, setFairwaysTees] = useState('')
   const [maintenance, setMaintenance] = useState('')
@@ -70,6 +71,7 @@ export function Submit() {
     setPaceHours('')
     setPaceMinutes('')
     setTransport(null)
+    setWalkability('')
     setGreens('')
     setFairwaysTees('')
     setMaintenance('')
@@ -106,7 +108,8 @@ export function Submit() {
       date_played: datePlayed,
       time_of_day: timeOfDay,
       transport_mode: transport,
-      walkability_notes: null,
+      walkability_notes:
+        transport === 'walking' ? walkability.trim() || null : null,
       price_paid: pricePaid ? parseFloat(pricePaid) : null,
       holes_played: holesPlayed,
       pace_of_play: paceTotal,
@@ -270,7 +273,13 @@ export function Submit() {
         <div className={pairedRowClass}>
           <div className={pairedCellClass}>
             <FieldLabel>Walk/Ride:</FieldLabel>
-            <TransportToggle value={transport} onChange={setTransport} />
+            <TransportToggle
+              value={transport}
+              onChange={(mode) => {
+                setTransport(mode)
+                if (mode !== 'walking') setWalkability('')
+              }}
+            />
           </div>
           <div className={pairedCellClass}>
             <FieldLabel>Pace of Play:</FieldLabel>
@@ -300,6 +309,19 @@ export function Submit() {
             </div>
           </div>
         </div>
+
+        {transport === 'walking' && (
+          <div>
+            <FieldLabel>Walkability:</FieldLabel>
+            <textarea
+              rows={3}
+              value={walkability}
+              onChange={(e) => setWalkability(e.target.value)}
+              placeholder="Hills, path conditions, distance between holes…"
+              className={textareaClass}
+            />
+          </div>
+        )}
 
         <div className="border-t border-green-dark/25 pt-4">
           <h2 className="mb-3 font-display text-xl text-green-dark">

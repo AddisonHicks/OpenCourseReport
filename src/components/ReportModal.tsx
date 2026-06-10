@@ -136,6 +136,12 @@ export function ReportModal({ report, onClose }: ReportModalProps) {
               label="Fairways & Tees"
               value={report.fairways_tees_report}
             />
+            {report.transport_mode === 'walking' && (
+              <ConditionBlock
+                label="Walkability"
+                value={report.walkability_notes}
+              />
+            )}
             <ConditionBlock
               label="Maintenance"
               value={report.maintenance_notes}
