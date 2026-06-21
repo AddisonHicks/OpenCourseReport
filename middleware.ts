@@ -1,10 +1,10 @@
 import { rewrite } from '@vercel/functions'
 
 const CRAWLER_RE =
-  /bot|facebookexternalhit|facebot|twitterbot|discordbot|whatsapp|telegrambot|linkedinbot|slackbot|applebot|embedly|pinterest|reddit|preview/i
+  /bot|facebookexternalhit|facebot|twitterbot|discordbot|whatsapp|telegrambot|linkedinbot|slackbot|applebot|embedly|pinterest|reddit|preview|opengraphxyz/i
 
 export const config = {
-  matcher: ['/', '/course/:path*', '/report/:path*'],
+  matcher: ['/', '/course/:path*'],
 }
 
 export default function middleware(request: Request) {

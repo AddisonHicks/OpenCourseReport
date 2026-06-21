@@ -2,7 +2,7 @@ import { Outlet, useLocation } from 'react-router-dom'
 import { BottomNav } from './BottomNav'
 import { SiteHeader } from './SiteHeader'
 
-const HIDE_NAV_PREFIXES = ['/embed/', '/report/']
+const HIDE_NAV_PREFIXES = ['/embed/']
 
 export function Layout() {
   const { pathname } = useLocation()

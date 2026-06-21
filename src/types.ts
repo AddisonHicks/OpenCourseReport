@@ -19,6 +19,7 @@ export interface Course {
 
 export interface Report {
   id: string
+  slug: string | null
   first_name: string
   last_initial: string
   course_id: string

@@ -112,7 +112,7 @@ export function ReportCardExpanded({
         />
         {showShare && (
           <ShareButton
-            url={reportShareUrl(report.id)}
+            url={reportShareUrl(report)}
             title={`${course.course_name} report`}
             text={`Golf conditions report for ${course.course_name}`}
           />

@@ -1,5 +1,6 @@
-import type { Course } from '../types'
+import type { Course, Report } from '../types'
 import { coursePath } from './courseSlug'
+import { reportPath } from './reportSlug'
 
 export function courseShareUrl(
   course: Pick<Course, 'slug' | 'course_name' | 'zipcode' | 'city' | 'state'>,
@@ -7,8 +8,12 @@ export function courseShareUrl(
   return `${window.location.origin}${coursePath(course)}`
 }
 
-export function reportShareUrl(reportId: string): string {
-  return `${window.location.origin}/report/${reportId}`
+export function reportShareUrl(
+  report: Pick<Report, 'slug' | 'date_played'> & {
+    courses: Pick<Course, 'slug' | 'course_name' | 'zipcode' | 'city' | 'state'>
+  },
+): string {
+  return `${window.location.origin}${reportPath(report.courses, report)}`
 }
 
 export type ShareResult = 'shared' | 'copied' | 'failed' | 'cancelled'

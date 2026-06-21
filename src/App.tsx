@@ -23,7 +23,10 @@ export default function App() {
             <Route path="add-course" element={<AddCourse />} />
             <Route path="course/:courseSlug" element={<CoursePage />} />
           </Route>
-          <Route path="report/:reportId" element={<ReportPage />} />
+          <Route
+            path="course/:courseSlug/:reportSlug"
+            element={<ReportPage />}
+          />
           <Route path="embed/:courseId" element={<EmbedView />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
