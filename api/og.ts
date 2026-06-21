@@ -146,6 +146,28 @@ function parseReportSlugParam(reportSlug: string): { datePlayed: string; index: 
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
+const REPORT_SELECT = encodeURIComponent(
+  'id,slug,date_played,courses(id,course_name,city,state,zipcode,slug)',
+)
+
+/** PostgREST eq filter — quote values so dates like 2026-06-08-2 parse correctly */
+function eqFilter(column: string, value: string): string {
+  return `${column}=eq.${encodeURIComponent(`"${value.replace(/"/g, '\\"')}"`)}`
+}
+
+function normalizeReportRow(row: Record<string, unknown> | undefined): ReportRow | null {
+  if (!row) return null
+  const rawCourses = row.courses
+  const courses = Array.isArray(rawCourses) ? rawCourses[0] : rawCourses
+  if (!courses || typeof courses !== 'object') return null
+  return {
+    id: String(row.id),
+    slug: row.slug != null ? String(row.slug) : null,
+    date_played: String(row.date_played),
+    courses: courses as Course,
+  }
+}
+
 async function supabaseGet<T>(pathAndQuery: string): Promise<T | null> {
   const cfg = getSupabaseConfig()
   if (!cfg) return null
@@ -156,7 +178,10 @@ async function supabaseGet<T>(pathAndQuery: string): Promise<T | null> {
       Accept: 'application/json',
     },
   })
-  if (!res.ok) return null
+  if (!res.ok) {
+    console.error('Supabase REST error:', res.status, pathAndQuery)
+    return null
+  }
   return (await res.json()) as T
 }
 
@@ -188,19 +213,20 @@ async function fetchReportByCourseSlug(
   const course = await getCourseBySlug(courseSlug)
   if (!course) return null
 
-  const bySlug = await supabaseGet<ReportRow[]>(
-    `reports?course_id=eq.${course.id}&slug=eq.${encodeURIComponent(reportSlug)}&select=id,slug,date_played,courses(id,course_name,city,state,zipcode,slug)&limit=1`,
+  const bySlug = await supabaseGet<Record<string, unknown>[]>(
+    `reports?course_id=eq.${course.id}&${eqFilter('slug', reportSlug)}&select=${REPORT_SELECT}&limit=1`,
   )
-  if (bySlug?.[0]) return bySlug[0]
+  const fromSlug = normalizeReportRow(bySlug?.[0])
+  if (fromSlug) return fromSlug
 
   const parsed = parseReportSlugParam(reportSlug)
   if (!parsed) return null
 
-  const rows = await supabaseGet<ReportRow[]>(
-    `reports?course_id=eq.${course.id}&date_played=eq.${parsed.datePlayed}&select=id,slug,date_played,courses(id,course_name,city,state,zipcode,slug)&order=created_at.asc`,
+  const rows = await supabaseGet<Record<string, unknown>[]>(
+    `reports?course_id=eq.${course.id}&date_played=eq.${parsed.datePlayed}&select=${REPORT_SELECT}&order=created_at.asc`,
   )
   if (!rows?.length) return null
-  return rows[parsed.index - 1] ?? null
+  return normalizeReportRow(rows[parsed.index - 1]) ?? null
 }
 
 function buildHomeMeta(siteUrl: string, images: ReturnType<typeof getOgImages>): OgMeta {
@@ -224,6 +250,21 @@ function buildCourseMeta(course: Course, siteUrl: string, images: ReturnType<typ
     url: `${base}/course/${slug}`,
     image: images.course,
     type: 'website',
+  }
+}
+
+function buildReportFallbackMeta(
+  siteUrl: string,
+  path: string,
+  images: ReturnType<typeof getOgImages>,
+): OgMeta {
+  const base = normalizeSiteUrl(siteUrl)
+  return {
+    title: `Course Report | ${SITE_NAME}`,
+    description: 'Golf conditions report on OpenCourseReport. Tap to read more.',
+    url: `${base}${path}`,
+    image: images.report,
+    type: 'article',
   }
 }
 
@@ -275,7 +316,11 @@ export default async function handler(
         decodeURIComponent(reportMatch[2]),
       )
       if (!report) {
-        sendHtml(res, renderOgHtml(buildHomeMeta(siteUrl, images), true), 404)
+        sendHtml(
+          res,
+          renderOgHtml(buildReportFallbackMeta(siteUrl, path, images), true),
+          404,
+        )
         return
       }
       sendHtml(res, renderOgHtml(buildReportMeta(report, siteUrl, images)))

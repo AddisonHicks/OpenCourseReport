@@ -4,7 +4,7 @@ const CRAWLER_RE =
   /bot|facebookexternalhit|facebot|twitterbot|discordbot|whatsapp|telegrambot|linkedinbot|slackbot|applebot|embedly|pinterest|reddit|preview|opengraphxyz/i
 
 export const config = {
-  matcher: ['/', '/course/:path*'],
+  matcher: ['/', '/course/:courseSlug/:reportSlug', '/course/:courseSlug'],
 }
 
 export default function middleware(request: Request) {
