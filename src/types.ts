@@ -9,6 +9,7 @@ export interface Course {
   city: string
   state: string
   zipcode: string | null
+  slug: string | null
   holes: number | null
   course_type: CourseType | null
   is_user_submitted: boolean
@@ -42,9 +43,11 @@ export interface ReportWithCourse extends Report {
 
 export interface RecentCourse {
   id: string
+  slug?: string | null
   course_name: string
   city: string
   state: string
+  zipcode?: string | null
 }
 
 export interface ReportDisplay extends ReportWithCourse {

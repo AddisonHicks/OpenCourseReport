@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { coursePath } from '../lib/courses'
 import type { ReportDisplay } from '../types'
 import {
   formatDate,
@@ -28,7 +29,7 @@ export function ReportCard({ report }: ReportCardProps) {
 
   const goCourse = (e: React.MouseEvent) => {
     e.stopPropagation()
-    navigate(`/course/${course.id}`)
+    navigate(coursePath(course))
   }
 
   if (expanded) {
@@ -36,7 +37,7 @@ export function ReportCard({ report }: ReportCardProps) {
       <div className="mb-3">
         <ReportCardExpanded
           report={report}
-          onCourseClick={() => navigate(`/course/${course.id}`)}
+          onCourseClick={() => navigate(coursePath(course))}
         />
         <button
           type="button"

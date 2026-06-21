@@ -1,6 +1,14 @@
 import { supabase } from './supabase'
+import {
+  buildCourseSlug,
+  coursePath,
+  isUuid,
+  resolveCourseSlug,
+} from './courseSlug'
 import { getStateName, US_STATES } from './usStates'
 import type { Course } from '../types'
+
+export { coursePath, resolveCourseSlug }
 
 export interface CoursesByState {
   stateAbbr: string
@@ -113,6 +121,73 @@ export async function getCourseById(id: string): Promise<Course | null> {
   return data as Course
 }
 
+async function findCourseByComputedSlug(slug: string): Promise<Course | null> {
+  const zipMatch = slug.match(/-(\d{5})$/)
+  if (!zipMatch) return null
+
+  const zip = zipMatch[1]
+  const { data, error } = await supabase
+    .from('courses')
+    .select('*')
+    .eq('zipcode', zip)
+    .eq('is_approved', true)
+
+  if (error || !data?.length) return null
+
+  return (
+    (data as Course[]).find(
+      (course) => resolveCourseSlug(course) === slug,
+    ) ?? null
+  )
+}
+
+export async function getCourseBySlug(slugOrId: string): Promise<Course | null> {
+  if (isUuid(slugOrId)) {
+    return getCourseById(slugOrId)
+  }
+
+  const { data, error } = await supabase
+    .from('courses')
+    .select('*')
+    .eq('slug', slugOrId)
+    .maybeSingle()
+
+  if (error) {
+    console.error('Get course by slug error:', error)
+    return null
+  }
+  if (data) return data as Course
+
+  return findCourseByComputedSlug(slugOrId)
+}
+
+async function ensureUniqueSlug(
+  baseSlug: string,
+  excludeId?: string,
+): Promise<string> {
+  let candidate = baseSlug
+  let suffix = 2
+
+  while (true) {
+    const { data, error } = await supabase
+      .from('courses')
+      .select('id')
+      .eq('slug', candidate)
+      .maybeSingle()
+
+    if (error) {
+      console.error('Slug lookup error:', error)
+      return candidate
+    }
+    if (!data || (excludeId && data.id === excludeId)) {
+      return candidate
+    }
+
+    candidate = `${baseSlug}-${suffix}`
+    suffix += 1
+  }
+}
+
 export interface AddCourseInput {
   course_name: string
   city: string
@@ -125,13 +200,22 @@ export interface AddCourseInput {
 export async function addCourse(
   input: AddCourseInput,
 ): Promise<{ course: Course | null; error: string | null }> {
+  const courseName = input.course_name.trim()
+  const city = input.city.trim()
+  const state = input.state.trim()
+  const zipcode = input.zipcode?.trim() || null
+  const slug = await ensureUniqueSlug(
+    buildCourseSlug(courseName, zipcode, city, state),
+  )
+
   const { data, error } = await supabase
     .from('courses')
     .insert({
-      course_name: input.course_name.trim(),
-      city: input.city.trim(),
-      state: input.state.trim(),
-      zipcode: input.zipcode?.trim() || null,
+      course_name: courseName,
+      city,
+      state,
+      zipcode,
+      slug,
       holes: input.holes,
       course_type: input.course_type,
       is_user_submitted: false,

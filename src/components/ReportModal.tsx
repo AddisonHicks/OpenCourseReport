@@ -1,5 +1,7 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { coursePath } from '../lib/courses'
+import { ShareButton } from './ShareButton'
 import type { ReportDisplay } from '../types'
 import {
   formatDateNumeric,
@@ -10,6 +12,7 @@ import {
   submitterName,
   timeOfDayLabel,
 } from '../lib/reportQueries'
+import { reportShareUrl } from '../lib/share'
 
 interface ReportModalProps {
   report: ReportDisplay
@@ -78,7 +81,7 @@ export function ReportModal({ report, onClose }: ReportModalProps) {
               type="button"
               onClick={() => {
                 onClose()
-                navigate(`/course/${report.courses.id}`)
+                navigate(coursePath(report.courses))
               }}
               className="mt-1 block w-full text-left font-display text-base font-semibold text-green-mid underline"
             >
@@ -152,6 +155,15 @@ export function ReportModal({ report, onClose }: ReportModalProps) {
             />
           </div>
         </section>
+
+        <div className="mt-4 flex justify-end border-t border-green-dark/25 pt-4">
+          <ShareButton
+            url={reportShareUrl(report.id)}
+            title={`${report.courses.course_name} report`}
+            text={`Golf conditions report for ${report.courses.course_name}`}
+            label="Share report"
+          />
+        </div>
       </div>
     </div>
   )

@@ -21,7 +21,7 @@ export default function App() {
             <Route path="about" element={<About />} />
             <Route path="courses" element={<CourseList />} />
             <Route path="add-course" element={<AddCourse />} />
-            <Route path="course/:courseId" element={<CoursePage />} />
+            <Route path="course/:courseSlug" element={<CoursePage />} />
           </Route>
           <Route path="report/:reportId" element={<ReportPage />} />
           <Route path="embed/:courseId" element={<EmbedView />} />

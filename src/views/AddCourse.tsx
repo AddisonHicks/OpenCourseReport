@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useToast } from '../context/ToastContext'
-import { addCourse } from '../lib/courses'
+import { addCourse, coursePath } from '../lib/courses'
+import type { Course } from '../types'
 import { suggestZipFromCityState } from '../lib/zipcode'
 import { isValidUsStateAbbr, US_STATES } from '../lib/usStates'
 import type { CourseType } from '../types'
@@ -19,7 +20,7 @@ export function AddCourse() {
   const [holes, setHoles] = useState('')
   const [courseType, setCourseType] = useState<CourseType>('Public')
   const [submitting, setSubmitting] = useState(false)
-  const [addedCourseId, setAddedCourseId] = useState<string | null>(null)
+  const [addedCourse, setAddedCourse] = useState<Course | null>(null)
   const [autoZip, setAutoZip] = useState(true)
   const [zipSuggested, setZipSuggested] = useState(false)
   const [lookingUpZip, setLookingUpZip] = useState(false)
@@ -93,7 +94,7 @@ export function AddCourse() {
       return
     }
 
-    setAddedCourseId(course.id)
+    setAddedCourse(course)
     showToast('Course added!')
   }
 
@@ -104,11 +105,11 @@ export function AddCourse() {
     setZipcode('')
     setHoles('')
     setCourseType('Public')
-    setAddedCourseId(null)
+    setAddedCourse(null)
     setAutoZip(true)
     setZipSuggested(false)
   }
-  if (addedCourseId) {
+  if (addedCourse) {
     return (
       <div className="-mx-4 px-4 py-8 text-center">
         <h1 className="font-display text-3xl font-bold text-green-dark">
@@ -121,7 +122,7 @@ export function AddCourse() {
         <div className="mt-8 flex flex-col gap-3">
           <button
             type="button"
-            onClick={() => navigate(`/course/${addedCourseId}`)}
+            onClick={() => navigate(coursePath(addedCourse))}
             className="min-h-12 w-full rounded-xl bg-green-dark px-4 py-3 font-display text-lg font-bold text-sand"
           >
             View Course Page

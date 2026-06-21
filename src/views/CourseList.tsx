@@ -1,11 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import {
-  fetchAllApprovedCourses,
-  formatCourseLocation,
-  groupCoursesByState,
-  type CoursesByState,
-} from '../lib/courses'
+import { fetchAllApprovedCourses, formatCourseLocation, groupCoursesByState, coursePath, type CoursesByState } from '../lib/courses'
 
 export function CourseList() {
   const [loading, setLoading] = useState(true)
@@ -84,7 +79,7 @@ export function CourseList() {
               {group.courses.map((course) => (
                 <Link
                   key={course.id}
-                  to={`/course/${course.id}`}
+                  to={coursePath(course)}
                   className="flex min-h-11 items-center border-b border-green-dark/10 px-4 py-3 last:border-0 active:bg-green-dark/5"
                 >
                   <div className="min-w-0">

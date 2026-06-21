@@ -5,6 +5,7 @@ import { ReportModal } from '../components/ReportModal'
 import { HomeSearchPanel } from '../components/HomeSearchPanel'
 import { UserAreaZip } from '../components/UserAreaZip'
 import { getUserZipcode } from '../lib/localStorage'
+import { setHomePageMeta } from '../lib/pageMeta'
 import { buildDisplayFeed } from '../lib/reportQueries'
 import { fetchReportsFeed } from '../lib/reports'
 import { filterReportsWithinRadius } from '../lib/zipcode'
@@ -46,6 +47,10 @@ export function Browse() {
   useEffect(() => {
     void loadFeed()
   }, [loadFeed])
+
+  useEffect(() => {
+    setHomePageMeta()
+  }, [])
 
   useEffect(() => {
     if (!userZip) {
