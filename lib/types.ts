@@ -14,7 +14,7 @@ export interface Course {
 
 export interface ReportWithCourse {
   id: string
-  slug: string | null
+  slug?: string | null
   date_played: string
   courses: Course
 }

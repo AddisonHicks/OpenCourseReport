@@ -122,7 +122,7 @@ function resolveCourseSlug(course: Course): string {
   return `${base}-${slugifyCourseName(course.city)}-${course.state.trim().toLowerCase()}`
 }
 
-function resolveReportSlug(report: { slug: string | null; date_played: string }): string {
+function resolveReportSlug(report: { slug?: string | null; date_played: string }): string {
   if (report.slug) return report.slug
   const d = report.date_played.slice(0, 10)
   return /^\d{4}-\d{2}-\d{2}$/.test(d) ? d : report.date_played
@@ -223,10 +223,35 @@ async function fetchReportByCourseSlug(
   if (!parsed) return null
 
   const rows = await supabaseGet<Record<string, unknown>[]>(
-    `reports?course_id=eq.${course.id}&date_played=eq.${parsed.datePlayed}&select=${REPORT_SELECT}&order=created_at.asc`,
+    `reports?course_id=eq.${course.id}&${eqFilter('date_played', parsed.datePlayed)}&select=${REPORT_SELECT}&order=created_at.asc`,
   )
   if (!rows?.length) return null
   return normalizeReportRow(rows[parsed.index - 1]) ?? null
+}
+
+function formatDateFromIso(iso: string): string {
+  const [yyyy, mm, dd] = iso.split('-')
+  if (!yyyy || !mm || !dd) return iso
+  return `${mm}/${dd}/${yyyy}`
+}
+
+function buildReportMetaFromUrl(
+  course: Course,
+  reportSlug: string,
+  path: string,
+  siteUrl: string,
+  images: ReturnType<typeof getOgImages>,
+): OgMeta {
+  const base = normalizeSiteUrl(siteUrl)
+  const parsed = parseReportSlugParam(reportSlug)
+  const datePlayed = parsed ? formatDateFromIso(parsed.datePlayed) : reportSlug
+  return {
+    title: `${datePlayed} Report - ${course.course_name} | ${SITE_NAME}`,
+    description: `Golf conditions report for ${course.course_name} on ${datePlayed}. Tap to read more.`,
+    url: `${base}${path}`,
+    image: images.report,
+    type: 'article',
+  }
 }
 
 function buildHomeMeta(siteUrl: string, images: ReturnType<typeof getOgImages>): OgMeta {
@@ -311,19 +336,25 @@ export default async function handler(
 
     const reportMatch = path.match(/^\/course\/([^/]+)\/([^/]+)\/?$/)
     if (reportMatch) {
-      const report = await fetchReportByCourseSlug(
-        decodeURIComponent(reportMatch[1]),
-        decodeURIComponent(reportMatch[2]),
-      )
-      if (!report) {
+      const courseSlug = decodeURIComponent(reportMatch[1])
+      const reportSlug = decodeURIComponent(reportMatch[2])
+      const course = await getCourseBySlug(courseSlug)
+      const report = course
+        ? await fetchReportByCourseSlug(courseSlug, reportSlug)
+        : null
+
+      if (report) {
+        sendHtml(res, renderOgHtml(buildReportMeta(report, siteUrl, images)))
+        return
+      }
+      if (course && parseReportSlugParam(reportSlug)) {
         sendHtml(
           res,
-          renderOgHtml(buildReportFallbackMeta(siteUrl, path, images), true),
-          404,
+          renderOgHtml(buildReportMetaFromUrl(course, reportSlug, path, siteUrl, images)),
         )
         return
       }
-      sendHtml(res, renderOgHtml(buildReportMeta(report, siteUrl, images)))
+      sendHtml(res, renderOgHtml(buildReportFallbackMeta(siteUrl, path, images), true), 404)
       return
     }
 

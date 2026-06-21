@@ -4,7 +4,24 @@ import { supabase } from './supabase'
 import type { ReportWithCourse } from '../types'
 
 const REPORT_SELECT = `
-  *,
+  id,
+  slug,
+  date_played,
+  first_name,
+  last_initial,
+  course_id,
+  time_of_day,
+  transport_mode,
+  walkability_notes,
+  price_paid,
+  holes_played,
+  pace_of_play,
+  greens_report,
+  fairways_tees_report,
+  maintenance_notes,
+  other_conditions_notes,
+  helpful_votes,
+  created_at,
   courses (
     id,
     course_name,
@@ -31,7 +48,7 @@ export async function fetchReportsFeed(): Promise<ReportWithCourse[]> {
     console.error('Fetch feed error:', error)
     return []
   }
-  return (data ?? []) as ReportWithCourse[]
+  return (data ?? []) as unknown as ReportWithCourse[]
 }
 
 export async function fetchReportsForCourse(
@@ -47,7 +64,7 @@ export async function fetchReportsForCourse(
     console.error('Fetch course reports error:', error)
     return []
   }
-  return (data ?? []) as ReportWithCourse[]
+  return (data ?? []) as unknown as ReportWithCourse[]
 }
 
 export async function fetchLastReportDatesByCourseIds(
@@ -83,18 +100,14 @@ export async function fetchReportByCourseSlug(
   const course = await getCourseBySlug(courseSlug)
   if (!course) return null
 
-  const { data, error } = await supabase
+  const { data: bySlug, error: slugError } = await supabase
     .from('reports')
     .select(REPORT_SELECT)
     .eq('course_id', course.id)
     .eq('slug', reportSlug)
     .maybeSingle()
 
-  if (error) {
-    console.error('Fetch report by slug error:', error)
-    return null
-  }
-  if (data) return data as ReportWithCourse
+  if (!slugError && bySlug) return bySlug as unknown as ReportWithCourse
 
   const parsed = parseReportSlugParam(reportSlug)
   if (!parsed) return null
@@ -107,7 +120,7 @@ export async function fetchReportByCourseSlug(
     .order('created_at', { ascending: true })
 
   if (listError || !rows?.length) return null
-  return (rows as ReportWithCourse[])[parsed.index - 1] ?? null
+  return (rows as unknown as ReportWithCourse[])[parsed.index - 1] ?? null
 }
 
 export async function incrementHelpfulVote(reportId: string): Promise<number | null> {
