@@ -12,7 +12,7 @@ export function buildReportDateSlug(datePlayed: string): string {
 }
 
 export function resolveReportSlug(report: {
-  slug: string | null
+  slug?: string | null
   date_played: string
 }): string {
   return report.slug ?? buildReportDateSlug(report.date_played)
@@ -20,7 +20,7 @@ export function resolveReportSlug(report: {
 
 export function reportPublicPath(
   course: Parameters<typeof resolveCourseSlug>[0],
-  report: { slug: string | null; date_played: string },
+  report: { slug?: string | null; date_played: string },
 ): string {
   return `/course/${resolveCourseSlug(course)}/${resolveReportSlug(report)}`
 }
