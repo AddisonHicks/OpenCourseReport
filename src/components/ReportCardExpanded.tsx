@@ -8,7 +8,8 @@ import {
   timeOfDayLabel,
 } from '../lib/reportQueries'
 import { HelpfulVote } from './HelpfulVote'
-import { useToast } from '../context/ToastContext'
+import { ShareButton } from './ShareButton'
+import { reportShareUrl } from '../lib/share'
 
 interface ReportCardExpandedProps {
   report: ReportDisplay
@@ -33,7 +34,6 @@ export function ReportCardExpanded({
   showShare = true,
   onCourseClick,
 }: ReportCardExpandedProps) {
-  const { showToast } = useToast()
   const course = report.courses
   const transport =
     report.transport_mode === 'walking'
@@ -41,18 +41,6 @@ export function ReportCardExpanded({
       : report.transport_mode === 'cart'
         ? '🛺 Cart'
         : null
-
-  const shareUrl = `${window.location.origin}/report/${report.id}`
-
-  const copyShare = async (e: React.MouseEvent) => {
-    e.stopPropagation()
-    try {
-      await navigator.clipboard.writeText(shareUrl)
-      showToast('Link copied!')
-    } catch {
-      showToast('Could not copy link')
-    }
-  }
 
   return (
     <article className="rounded-xl border border-green-pale bg-white p-4 shadow-sm">
@@ -123,13 +111,11 @@ export function ReportCardExpanded({
           initialCount={report.helpful_votes ?? 0}
         />
         {showShare && (
-          <button
-            type="button"
-            onClick={(e) => void copyShare(e)}
-            className="min-h-11 rounded-lg border border-green-mid/40 px-4 py-2 text-sm font-semibold text-green-mid active:bg-green-pale"
-          >
-            Share
-          </button>
+          <ShareButton
+            url={reportShareUrl(report.id)}
+            title={`${course.course_name} report`}
+            text={`Golf conditions report for ${course.course_name}`}
+          />
         )}
       </div>
     </article>

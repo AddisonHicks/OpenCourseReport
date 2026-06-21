@@ -1,19 +1,16 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ReportModal } from '../components/ReportModal'
+import { coursePath } from '../lib/courses'
+import {
+  buildReportOgMeta,
+  getOgImageUrls,
+  normalizeSiteUrl,
+} from '../lib/ogMeta'
+import { resetPageMeta, setPageMeta } from '../lib/pageMeta'
 import { fetchReportById } from '../lib/reports'
 import { isWithin90Days } from '../lib/reportQueries'
 import type { ReportDisplay } from '../types'
-
-function setMeta(property: string, content: string) {
-  let el = document.querySelector(`meta[property="${property}"]`)
-  if (!el) {
-    el = document.createElement('meta')
-    el.setAttribute('property', property)
-    document.head.appendChild(el)
-  }
-  el.setAttribute('content', content)
-}
 
 export function ReportPage() {
   const { reportId } = useParams<{ reportId: string }>()
@@ -35,22 +32,23 @@ export function ReportPage() {
       })
       setLoading(false)
 
-      const courseName = raw.courses.course_name
-      const title = `${courseName} — Course Report | OpenCourseReport`
-      const desc =
-        raw.greens_report?.slice(0, 120) ??
-        `Golf conditions report for ${courseName}`
-      document.title = title
-      setMeta('og:title', title)
-      setMeta('og:description', desc)
-      setMeta('og:type', 'article')
-      setMeta('twitter:card', 'summary')
-      setMeta('twitter:title', title)
-      setMeta('twitter:description', desc)
+      const images = getOgImageUrls({
+        VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
+        OG_IMAGE_HOME: import.meta.env.VITE_OG_IMAGE_HOME,
+        OG_IMAGE_COURSE: import.meta.env.VITE_OG_IMAGE_COURSE,
+        OG_IMAGE_REPORT: import.meta.env.VITE_OG_IMAGE_REPORT,
+      })
+      setPageMeta(
+        buildReportOgMeta(
+          raw,
+          normalizeSiteUrl(window.location.origin),
+          images,
+        ),
+      )
     })
 
     return () => {
-      document.title = 'OpenCourseReport'
+      resetPageMeta()
     }
   }, [reportId])
 
@@ -76,7 +74,7 @@ export function ReportPage() {
   return (
     <ReportModal
       report={report}
-      onClose={() => navigate(`/course/${report.courses.id}`)}
+      onClose={() => navigate(coursePath(report.courses))}
     />
   )
 }

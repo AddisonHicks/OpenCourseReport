@@ -2,17 +2,25 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { CourseReportRow } from '../components/CourseReportRow'
 import { ReportModal } from '../components/ReportModal'
-import { getCourseById, formatCourseLocation } from '../lib/courses'
+import { ShareButton } from '../components/ShareButton'
+import { formatCourseLocation, getCourseBySlug } from '../lib/courses'
+import {
+  buildCourseOgMeta,
+  getOgImageUrls,
+  normalizeSiteUrl,
+} from '../lib/ogMeta'
+import { setPageMeta, resetPageMeta } from '../lib/pageMeta'
 import {
   apply90DayFilter,
   formatDateNumeric,
   sortReportsByDatePlayed,
 } from '../lib/reportQueries'
 import { fetchReportsForCourse } from '../lib/reports'
+import { courseShareUrl } from '../lib/share'
 import type { Course, ReportDisplay } from '../types'
 
 export function CoursePage() {
-  const { courseId } = useParams<{ courseId: string }>()
+  const { courseSlug } = useParams<{ courseSlug: string }>()
   const navigate = useNavigate()
   const [course, setCourse] = useState<Course | null>(null)
   const [reports, setReports] = useState<ReportDisplay[]>([])
@@ -20,20 +28,40 @@ export function CoursePage() {
   const [activeReport, setActiveReport] = useState<ReportDisplay | null>(null)
 
   const load = useCallback(async () => {
-    if (!courseId) return
+    if (!courseSlug) return
     setLoading(true)
-    const [c, raw] = await Promise.all([
-      getCourseById(courseId),
-      fetchReportsForCourse(courseId),
-    ])
+    const c = await getCourseBySlug(courseSlug)
+    const raw = c ? await fetchReportsForCourse(c.id) : []
     setCourse(c)
     setReports(apply90DayFilter(raw))
     setLoading(false)
-  }, [courseId])
+  }, [courseSlug])
 
   useEffect(() => {
     void load()
   }, [load])
+
+  useEffect(() => {
+    if (!course) return
+
+    const images = getOgImageUrls({
+      VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
+      OG_IMAGE_HOME: import.meta.env.VITE_OG_IMAGE_HOME,
+      OG_IMAGE_COURSE: import.meta.env.VITE_OG_IMAGE_COURSE,
+      OG_IMAGE_REPORT: import.meta.env.VITE_OG_IMAGE_REPORT,
+    })
+    setPageMeta(
+      buildCourseOgMeta(
+        course,
+        normalizeSiteUrl(window.location.origin),
+        images,
+      ),
+    )
+
+    return () => {
+      resetPageMeta()
+    }
+  }, [course])
 
   const sortedReports = useMemo(
     () => sortReportsByDatePlayed(reports),
@@ -76,6 +104,16 @@ export function CoursePage() {
           </p>
         </div>
       </header>
+
+      <div className="flex justify-end">
+        <ShareButton
+          url={courseShareUrl(course)}
+          title={course.course_name}
+          text={`Golf reports for ${course.course_name}`}
+          label="Share course"
+          className="min-h-11 px-3 py-2 font-body text-sm font-semibold text-green-mid underline active:text-green-dark"
+        />
+      </div>
 
       <button
         type="button"

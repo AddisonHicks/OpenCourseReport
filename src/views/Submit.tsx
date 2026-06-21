@@ -6,7 +6,7 @@ import { HolesPlayedToggle } from '../components/HolesPlayedToggle'
 import { TransportToggle } from '../components/TransportToggle'
 import { SubmitConfirmation } from '../components/SubmitConfirmation'
 import { useToast } from '../context/ToastContext'
-import { getCourseById, formatCourseLocation } from '../lib/courses'
+import { getCourseBySlug, formatCourseLocation, coursePath } from '../lib/courses'
 import { addRecentCourse, setLastSubmitted, setUserZipcode } from '../lib/localStorage'
 import { todayLocalDateString } from '../lib/reportQueries'
 import { supabase } from '../lib/supabase'
@@ -56,7 +56,7 @@ export function Submit() {
       return
     }
 
-    void getCourseById(id).then((c) => {
+    void getCourseBySlug(id).then((c) => {
       if (c) setSelectedCourse(c)
     })
   }, [courseIdParam, state?.course, state?.courseId])
@@ -129,9 +129,11 @@ export function Submit() {
 
     addRecentCourse({
       id: selectedCourse.id,
+      slug: selectedCourse.slug,
       course_name: selectedCourse.course_name,
       city: selectedCourse.city,
       state: selectedCourse.state,
+      zipcode: selectedCourse.zipcode,
     })
     setLastSubmitted(datePlayed)
     if (selectedCourse.zipcode) {
@@ -157,7 +159,7 @@ export function Submit() {
       <SubmitConfirmation
         course={confirmedCourse}
         onHome={() => navigate('/')}
-        onCoursePage={() => navigate(`/course/${confirmedCourse.id}`)}
+        onCoursePage={() => navigate(coursePath(confirmedCourse))}
       />
     )
   }

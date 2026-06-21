@@ -9,6 +9,7 @@ create table if not exists courses (
   city text not null,
   state text not null,
   zipcode text,
+  slug text unique,
   holes integer,
   course_type text check (course_type in ('Public', 'Semi-Private', 'Private')),
   is_user_submitted boolean default false,
@@ -50,7 +51,11 @@ create index if not exists idx_courses_approved on courses(is_approved);
 
 create index if not exists idx_courses_zipcode on courses(zipcode);
 
+create index if not exists idx_courses_slug on courses(slug);
+
 -- Migration for existing databases:
+-- alter table courses add column if not exists slug text unique;
+-- create index if not exists idx_courses_slug on courses(slug);
 -- alter table reports rename column fairways_report to fairways_tees_report;
 -- alter table reports add column if not exists holes_played integer check (holes_played in (9, 18));
 -- alter table courses add column if not exists zipcode text;

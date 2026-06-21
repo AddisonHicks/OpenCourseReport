@@ -1,9 +1,21 @@
 import { useNavigate } from 'react-router-dom'
+import { coursePath } from '../lib/courseSlug'
 import { getRecentCourses } from '../lib/localStorage'
+import type { RecentCourse } from '../types'
 
 interface RecentCoursesProps {
   variant?: 'pills' | 'tiles'
   onSelect?: (id: string) => void
+}
+
+function recentCoursePath(course: RecentCourse): string {
+  return coursePath({
+    slug: course.slug ?? null,
+    course_name: course.course_name,
+    zipcode: course.zipcode ?? null,
+    city: course.city,
+    state: course.state,
+  })
 }
 
 export function RecentCourses({
@@ -15,11 +27,11 @@ export function RecentCourses({
 
   if (courses.length === 0) return null
 
-  const handleTap = (id: string) => {
+  const handleTap = (course: RecentCourse) => {
     if (onSelect) {
-      onSelect(id)
+      onSelect(course.id)
     } else {
-      navigate(`/course/${id}`)
+      navigate(recentCoursePath(course))
     }
   }
 
@@ -34,7 +46,7 @@ export function RecentCourses({
             <button
               key={c.id}
               type="button"
-              onClick={() => handleTap(c.id)}
+              onClick={() => handleTap(c)}
               className="min-h-11 rounded-lg border border-green-pale bg-white px-4 py-3 text-left text-sm transition-colors active:bg-green-pale/40"
             >
               <span className="font-semibold text-green-dark">
@@ -61,7 +73,7 @@ export function RecentCourses({
           <button
             key={c.id}
             type="button"
-            onClick={() => handleTap(c.id)}
+            onClick={() => handleTap(c)}
             className="min-h-11 rounded-full border border-green-mid/40 bg-white px-4 py-2 text-sm font-medium text-green-dark transition-colors active:bg-green-pale"
           >
             {c.course_name} · {c.city}, {c.state}

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { searchCourses } from '../lib/courses'
+import { searchCourses, coursePath } from '../lib/courses'
 import { fetchLastReportDatesByCourseIds } from '../lib/reports'
 import type { Course } from '../types'
 import { BrowseCourseRow } from './BrowseCourseRow'
@@ -95,7 +95,7 @@ export function HomeSearchPanel() {
                   key={course.id}
                   course={course}
                   lastReportDate={lastReportDates.get(course.id) ?? null}
-                  to={`/course/${course.id}`}
+                  to={coursePath(course)}
                 />
               ))}
           </>
