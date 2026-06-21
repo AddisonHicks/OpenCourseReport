@@ -34,7 +34,9 @@ create table if not exists reports (
   maintenance_notes text,
   other_conditions_notes text,
   helpful_votes integer default 0,
-  created_at timestamptz default now()
+  slug text,
+  created_at timestamptz default now(),
+  unique (course_id, slug)
 );
 
 create table if not exists report_votes (
@@ -46,6 +48,7 @@ create table if not exists report_votes (
 create index if not exists idx_reports_course_id on reports(course_id);
 create index if not exists idx_reports_date_played on reports(date_played desc);
 create index if not exists idx_reports_created_at on reports(created_at desc);
+create index if not exists idx_reports_slug on reports(course_id, slug);
 create index if not exists idx_courses_name on courses(course_name);
 create index if not exists idx_courses_approved on courses(is_approved);
 
@@ -62,6 +65,25 @@ create index if not exists idx_courses_slug on courses(slug);
 -- create index if not exists idx_courses_zipcode on courses(zipcode);
 -- alter table courses drop column if exists phone;
 -- alter table courses drop column if exists website;
+-- alter table reports add column if not exists slug text;
+-- create unique index if not exists idx_reports_course_slug on reports(course_id, slug);
+-- Backfill report slugs (run once after adding slug column):
+-- with ranked as (
+--   select id,
+--     date_played::text as base_slug,
+--     row_number() over (
+--       partition by course_id, date_played
+--       order by created_at asc
+--     ) as rn
+--   from reports
+-- )
+-- update reports r
+-- set slug = case
+--   when ranked.rn = 1 then ranked.base_slug
+--   else ranked.base_slug || '-' || ranked.rn::text
+-- end
+-- from ranked
+-- where r.id = ranked.id and r.slug is null;
 
 alter table courses enable row level security;
 alter table reports enable row level security;

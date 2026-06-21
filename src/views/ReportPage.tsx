@@ -8,19 +8,22 @@ import {
   normalizeSiteUrl,
 } from '../lib/ogMeta'
 import { resetPageMeta, setPageMeta } from '../lib/pageMeta'
-import { fetchReportById } from '../lib/reports'
+import { fetchReportByCourseSlug } from '../lib/reports'
 import { isWithin90Days } from '../lib/reportQueries'
 import type { ReportDisplay } from '../types'
 
 export function ReportPage() {
-  const { reportId } = useParams<{ reportId: string }>()
+  const { courseSlug, reportSlug } = useParams<{
+    courseSlug: string
+    reportSlug: string
+  }>()
   const navigate = useNavigate()
   const [report, setReport] = useState<ReportDisplay | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!reportId) return
-    void fetchReportById(reportId).then((raw) => {
+    if (!courseSlug || !reportSlug) return
+    void fetchReportByCourseSlug(courseSlug, reportSlug).then((raw) => {
       if (!raw) {
         setReport(null)
         setLoading(false)
@@ -50,7 +53,7 @@ export function ReportPage() {
     return () => {
       resetPageMeta()
     }
-  }, [reportId])
+  }, [courseSlug, reportSlug])
 
   if (loading) {
     return (

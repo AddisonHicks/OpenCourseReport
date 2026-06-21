@@ -33,9 +33,9 @@ For local development, copy `.env.example` to `.env.local` and use the projectâ€
 |-------|-------------|
 | `/` | Browse â€” search, recent courses, report feed |
 | `/submit` | Submit a condition report |
-| `/course/:courseId` | Course detail, stats, reports |
+| `/course/:courseSlug` | Course detail, stats, reports |
 | `/about` | About the project |
-| `/report/:reportId` | Shareable single report |
+| `/course/:courseSlug/:reportSlug` | Shareable single report (e.g. `2026-06-08` or `2026-06-08-2`) |
 | `/embed/:courseId` | Minimal embed widget (iframe) |
 
 ## Local Storage Keys

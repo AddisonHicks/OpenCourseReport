@@ -9,6 +9,7 @@ import { useToast } from '../context/ToastContext'
 import { getCourseBySlug, formatCourseLocation, coursePath } from '../lib/courses'
 import { addRecentCourse, setLastSubmitted, setUserZipcode } from '../lib/localStorage'
 import { todayLocalDateString } from '../lib/reportQueries'
+import { ensureUniqueReportSlug } from '../lib/reportSlug'
 import { supabase } from '../lib/supabase'
 import type { Course, HolesPlayed, TimeOfDay, TransportMode } from '../types'
 
@@ -101,7 +102,10 @@ export function Submit() {
     const m = parseInt(paceMinutes, 10) || 0
     const paceTotal = h > 0 || m > 0 ? h * 60 + m : null
 
+    const slug = await ensureUniqueReportSlug(selectedCourse.id, datePlayed)
+
     const { error } = await supabase.from('reports').insert({
+      slug,
       first_name: firstName.trim(),
       last_initial: lastInitial.trim().charAt(0).toUpperCase(),
       course_id: selectedCourse.id,

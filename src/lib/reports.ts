@@ -1,3 +1,5 @@
+import { getCourseBySlug } from './courses'
+import { parseReportSlugParam } from './reportSlug'
 import { supabase } from './supabase'
 import type { ReportWithCourse } from '../types'
 
@@ -9,6 +11,7 @@ const REPORT_SELECT = `
     city,
     state,
     zipcode,
+    slug,
     holes,
     course_type,
     is_user_submitted,
@@ -73,20 +76,38 @@ export async function fetchLastReportDatesByCourseIds(
   return map
 }
 
-export async function fetchReportById(
-  id: string,
+export async function fetchReportByCourseSlug(
+  courseSlug: string,
+  reportSlug: string,
 ): Promise<ReportWithCourse | null> {
+  const course = await getCourseBySlug(courseSlug)
+  if (!course) return null
+
   const { data, error } = await supabase
     .from('reports')
     .select(REPORT_SELECT)
-    .eq('id', id)
-    .single()
+    .eq('course_id', course.id)
+    .eq('slug', reportSlug)
+    .maybeSingle()
 
   if (error) {
-    console.error('Fetch report error:', error)
+    console.error('Fetch report by slug error:', error)
     return null
   }
-  return data as ReportWithCourse
+  if (data) return data as ReportWithCourse
+
+  const parsed = parseReportSlugParam(reportSlug)
+  if (!parsed) return null
+
+  const { data: rows, error: listError } = await supabase
+    .from('reports')
+    .select(REPORT_SELECT)
+    .eq('course_id', course.id)
+    .eq('date_played', parsed.datePlayed)
+    .order('created_at', { ascending: true })
+
+  if (listError || !rows?.length) return null
+  return (rows as ReportWithCourse[])[parsed.index - 1] ?? null
 }
 
 export async function incrementHelpfulVote(reportId: string): Promise<number | null> {

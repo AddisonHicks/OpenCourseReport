@@ -6,12 +6,7 @@ import {
   getOgImageUrls,
   normalizeSiteUrl,
   renderOgHtml,
-} from '../src/lib/ogMeta'
-import { fetchReportById, getCourseBySlug } from './lib/ogData'
-
-export const config = {
-  runtime: 'edge',
-}
+} from './lib/ogMeta'
 
 const DEFAULT_SITE_URL = 'https://open-course-report.vercel.app'
 
@@ -36,57 +31,66 @@ function getEnv() {
   }
 }
 
-function cacheHeaders(): Record<string, string> {
-  return {
-    'Content-Type': 'text/html; charset=utf-8',
-    'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
-  }
+function sendHtml(res: { setHeader: (k: string, v: string) => void; status: (n: number) => { send: (b: string) => void } }, html: string, status = 200) {
+  res.setHeader('Content-Type', 'text/html; charset=utf-8')
+  res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400')
+  res.status(status).send(html)
 }
 
-export default async function handler(request: Request): Promise<Response> {
-  const { searchParams } = new URL(request.url)
-  const path = searchParams.get('path') ?? '/'
+export default async function handler(
+  req: { query: { path?: string } },
+  res: {
+    setHeader: (k: string, v: string) => void
+    status: (n: number) => { send: (b: string) => void }
+  },
+) {
+  const path = typeof req.query.path === 'string' ? req.query.path : '/'
   const siteUrl = getSiteUrl()
   const images = getOgImageUrls(getEnv())
 
-  if (path === '/' || path === '') {
+  try {
+    if (path === '/' || path === '') {
+      const meta = buildHomeOgMeta(siteUrl, images)
+      sendHtml(res, renderOgHtml(meta))
+      return
+    }
+
+    const reportPathMatch = path.match(/^\/course\/([^/]+)\/([^/]+)\/?$/)
+    if (reportPathMatch) {
+      const { fetchReportByCourseSlug } = await import('./lib/ogData')
+      const courseSlug = decodeURIComponent(reportPathMatch[1])
+      const reportSlug = decodeURIComponent(reportPathMatch[2])
+      const report = await fetchReportByCourseSlug(courseSlug, reportSlug)
+      if (!report) {
+        const meta = buildNotFoundOgMeta(siteUrl, images)
+        sendHtml(res, renderOgHtml(meta, { noindex: true }), 404)
+        return
+      }
+      const meta = buildReportOgMeta(report, siteUrl, images)
+      sendHtml(res, renderOgHtml(meta))
+      return
+    }
+
+    const courseMatch = path.match(/^\/course\/([^/]+)\/?$/)
+    if (courseMatch) {
+      const { getCourseBySlug } = await import('./lib/ogData')
+      const slug = decodeURIComponent(courseMatch[1])
+      const course = await getCourseBySlug(slug)
+      if (!course) {
+        const meta = buildNotFoundOgMeta(siteUrl, images)
+        sendHtml(res, renderOgHtml(meta, { noindex: true }), 404)
+        return
+      }
+      const meta = buildCourseOgMeta(course, siteUrl, images)
+      sendHtml(res, renderOgHtml(meta))
+      return
+    }
+
+    const meta = buildNotFoundOgMeta(siteUrl, images)
+    sendHtml(res, renderOgHtml(meta, { noindex: true }), 404)
+  } catch (err) {
+    console.error('OG handler error:', err)
     const meta = buildHomeOgMeta(siteUrl, images)
-    return new Response(renderOgHtml(meta), { headers: cacheHeaders() })
+    sendHtml(res, renderOgHtml(meta), 500)
   }
-
-  const courseMatch = path.match(/^\/course\/([^/]+)\/?$/)
-  if (courseMatch) {
-    const slug = decodeURIComponent(courseMatch[1])
-    const course = await getCourseBySlug(slug)
-    if (!course) {
-      const meta = buildNotFoundOgMeta(siteUrl, images)
-      return new Response(renderOgHtml(meta, { noindex: true }), {
-        status: 404,
-        headers: cacheHeaders(),
-      })
-    }
-    const meta = buildCourseOgMeta(course, siteUrl, images)
-    return new Response(renderOgHtml(meta), { headers: cacheHeaders() })
-  }
-
-  const reportMatch = path.match(/^\/report\/([^/]+)\/?$/)
-  if (reportMatch) {
-    const reportId = decodeURIComponent(reportMatch[1])
-    const report = await fetchReportById(reportId)
-    if (!report) {
-      const meta = buildNotFoundOgMeta(siteUrl, images)
-      return new Response(renderOgHtml(meta, { noindex: true }), {
-        status: 404,
-        headers: cacheHeaders(),
-      })
-    }
-    const meta = buildReportOgMeta(report, siteUrl, images)
-    return new Response(renderOgHtml(meta), { headers: cacheHeaders() })
-  }
-
-  const meta = buildNotFoundOgMeta(siteUrl, images)
-  return new Response(renderOgHtml(meta, { noindex: true }), {
-    status: 404,
-    headers: cacheHeaders(),
-  })
 }

@@ -158,7 +158,7 @@ export function ReportModal({ report, onClose }: ReportModalProps) {
 
         <div className="mt-4 flex justify-end border-t border-green-dark/25 pt-4">
           <ShareButton
-            url={reportShareUrl(report.id)}
+            url={reportShareUrl(report)}
             title={`${report.courses.course_name} report`}
             text={`Golf conditions report for ${report.courses.course_name}`}
             label="Share report"

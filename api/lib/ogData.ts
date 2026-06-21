@@ -1,9 +1,12 @@
 import { createClient } from '@supabase/supabase-js'
-import { isUuid, resolveCourseSlug } from '../../src/lib/courseSlug'
-import type { Course, ReportWithCourse } from '../../src/types'
+import { isUuid, resolveCourseSlug } from './courseSlug'
+import { parseReportSlugParam } from './reportSlug'
+import type { Course, ReportWithCourse } from './types'
 
 const REPORT_SELECT = `
-  *,
+  id,
+  slug,
+  date_played,
   courses (
     id,
     course_name,
@@ -86,16 +89,34 @@ export async function getCourseBySlug(slugOrId: string): Promise<Course | null> 
   return findCourseByComputedSlug(slugOrId)
 }
 
-export async function fetchReportById(
-  id: string,
+export async function fetchReportByCourseSlug(
+  courseSlug: string,
+  reportSlug: string,
 ): Promise<ReportWithCourse | null> {
+  const course = await getCourseBySlug(courseSlug)
+  if (!course) return null
+
   const supabase = getSupabase()
   const { data, error } = await supabase
     .from('reports')
     .select(REPORT_SELECT)
-    .eq('id', id)
-    .single()
+    .eq('course_id', course.id)
+    .eq('slug', reportSlug)
+    .maybeSingle()
 
   if (error) return null
-  return data as ReportWithCourse
+  if (data) return data as ReportWithCourse
+
+  const parsed = parseReportSlugParam(reportSlug)
+  if (!parsed) return null
+
+  const { data: rows, error: listError } = await supabase
+    .from('reports')
+    .select(REPORT_SELECT)
+    .eq('course_id', course.id)
+    .eq('date_played', parsed.datePlayed)
+    .order('created_at', { ascending: true })
+
+  if (listError || !rows?.length) return null
+  return (rows as ReportWithCourse[])[parsed.index - 1] ?? null
 }
