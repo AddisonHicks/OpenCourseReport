@@ -87,10 +87,6 @@ export function ReportModal({ report, onClose }: ReportModalProps) {
               ×
             </button>
           </div>
-          <p className="mt-1 text-base text-green-dark">
-            Submitted By:{' '}
-            {submitterName(report.first_name, report.last_initial)}
-          </p>
           <button
             type="button"
             onClick={() => {
@@ -101,6 +97,10 @@ export function ReportModal({ report, onClose }: ReportModalProps) {
           >
             {report.courses.course_name}
           </button>
+          <p className="mt-1 text-base text-green-dark">
+            Submitted By:{' '}
+            {submitterName(report.first_name, report.last_initial)}
+          </p>
         </div>
 
         <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-base text-green-dark">
