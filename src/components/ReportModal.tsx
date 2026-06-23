@@ -1,18 +1,15 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { coursePath } from '../lib/courses'
-import { ShareButton } from './ShareButton'
 import type { ReportDisplay } from '../types'
 import {
   formatDateNumeric,
-  formatDateWithWeekday,
   formatHolesPlayed,
   formatPace,
   formatPrice,
   submitterName,
   timeOfDayLabel,
 } from '../lib/reportQueries'
-import { reportShareUrl } from '../lib/share'
 
 interface ReportModalProps {
   report: ReportDisplay
@@ -36,7 +33,7 @@ function ConditionBlock({
 
 export function ReportModal({ report, onClose }: ReportModalProps) {
   const navigate = useNavigate()
-  const playedDate = formatDateWithWeekday(report.date_played)
+  const playedDate = formatDateNumeric(report.date_played)
   const reportTitleDate = formatDateNumeric(report.date_played)
   const transportLabel =
     report.transport_mode === 'walking'
@@ -77,26 +74,26 @@ export function ReportModal({ report, onClose }: ReportModalProps) {
             >
               {reportTitleDate} Report
             </h2>
+            <p className="mt-1 text-base text-green-dark">
+              Submitted By:{' '}
+              {submitterName(report.first_name, report.last_initial)}
+            </p>
             <button
               type="button"
               onClick={() => {
                 onClose()
                 navigate(coursePath(report.courses))
               }}
-              className="mt-1 block w-full text-left font-display text-base font-semibold text-green-mid underline"
+              className="mt-1 block text-left font-display text-base font-semibold text-green-mid underline"
             >
               {report.courses.course_name}
             </button>
-            <p className="mt-1 text-base text-green-dark">
-              Submitted By:{' '}
-              {submitterName(report.first_name, report.last_initial)}
-            </p>
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close report"
-            className="flex min-h-11 min-w-11 shrink-0 items-center justify-center text-3xl font-light leading-none text-green-dark"
+            className="-mt-3 shrink-0 text-5xl font-light leading-none text-green-dark active:opacity-70"
           >
             ×
           </button>
@@ -155,15 +152,6 @@ export function ReportModal({ report, onClose }: ReportModalProps) {
             />
           </div>
         </section>
-
-        <div className="mt-4 flex justify-end border-t border-green-dark/25 pt-4">
-          <ShareButton
-            url={reportShareUrl(report)}
-            title={`${report.courses.course_name} report`}
-            text={`Golf conditions report for ${report.courses.course_name}`}
-            label="Share report"
-          />
-        </div>
       </div>
     </div>
   )
