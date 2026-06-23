@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { BrowseCourseRow } from '../components/BrowseCourseRow'
 import { ReportModal } from '../components/ReportModal'
 import { HomeSearchPanel } from '../components/HomeSearchPanel'
@@ -78,6 +78,11 @@ export function Browse() {
           </h2>
           <p className="mb-1 font-display text-base text-green-dark">
             Based on Your Area (75 mile radius)
+          </p>
+          <p className="mb-3">
+            <Link to="/nearby-course-list" className="text-link text-sm">
+              View list of courses near you
+            </Link>
           </p>
 
           <UserAreaZip userZip={userZip} onZipChange={setUserZip} />

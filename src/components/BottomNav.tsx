@@ -1,9 +1,10 @@
 import { NavLink } from 'react-router-dom'
 
 const tabs = [
-  { to: '/', label: 'Browse', end: true },
-  { to: '/submit', label: 'Submit', end: false },
-  { to: '/about', label: 'About', end: false },
+  { to: '/', label: 'Browse', end: true, icon: '⛳' },
+  { to: '/nearby-course-list', label: 'Near You', end: true, icon: '📍' },
+  { to: '/submit', label: 'Submit', end: false, icon: '✏️' },
+  { to: '/about', label: 'About', end: false, icon: 'ℹ️' },
 ] as const
 
 export function BottomNav() {
@@ -13,13 +14,13 @@ export function BottomNav() {
       aria-label="Main navigation"
     >
       <div className="mx-auto flex max-w-lg">
-        {tabs.map(({ to, label, end }) => (
+        {tabs.map(({ to, label, end, icon }) => (
           <NavLink
             key={to}
             to={to}
             end={end}
             className={({ isActive }) =>
-              `flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 px-2 py-2 text-xs font-semibold transition-colors ${
+              `flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 px-1 py-2 text-xs font-semibold transition-colors ${
                 isActive
                   ? 'text-green-mid'
                   : 'text-green-dark/60 hover:text-green-dark'
@@ -27,9 +28,7 @@ export function BottomNav() {
             }
           >
             <span className="text-lg" aria-hidden>
-              {label === 'Browse' && '⛳'}
-              {label === 'Submit' && '✏️'}
-              {label === 'About' && 'ℹ️'}
+              {icon}
             </span>
             {label}
           </NavLink>
