@@ -93,6 +93,31 @@ export async function fetchLastReportDatesByCourseIds(
   return map
 }
 
+export async function fetchReportsForCourseIds(
+  courseIds: string[],
+): Promise<ReportWithCourse[]> {
+  if (courseIds.length === 0) return []
+
+  const batchSize = 100
+  const all: ReportWithCourse[] = []
+
+  for (let i = 0; i < courseIds.length; i += batchSize) {
+    const batch = courseIds.slice(i, i + batchSize)
+    const { data, error } = await supabase
+      .from('reports')
+      .select(REPORT_SELECT)
+      .in('course_id', batch)
+
+    if (error) {
+      console.error('Fetch reports for courses error:', error)
+      continue
+    }
+    all.push(...((data ?? []) as unknown as ReportWithCourse[]))
+  }
+
+  return all
+}
+
 export async function fetchReportByCourseSlug(
   courseSlug: string,
   reportSlug: string,

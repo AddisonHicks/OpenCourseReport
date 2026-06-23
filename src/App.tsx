@@ -6,6 +6,7 @@ import { About } from './views/About'
 import { Browse } from './views/Browse'
 import { CourseList } from './views/CourseList'
 import { CoursePage } from './views/CoursePage'
+import { NearbyCourseList } from './views/NearbyCourseList'
 import { EmbedView } from './views/EmbedView'
 import { ReportPage } from './views/ReportPage'
 import { Submit } from './views/Submit'
@@ -20,6 +21,7 @@ export default function App() {
             <Route path="submit" element={<Submit />} />
             <Route path="about" element={<About />} />
             <Route path="courses" element={<CourseList />} />
+            <Route path="nearby-course-list" element={<NearbyCourseList />} />
             <Route path="add-course" element={<AddCourse />} />
             <Route path="course/:courseSlug" element={<CoursePage />} />
           </Route>

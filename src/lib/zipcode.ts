@@ -1,4 +1,5 @@
 import type zipcodesType from 'zipcodes'
+import type { Course } from '../types'
 
 export const AREA_RADIUS_MILES = 75
 
@@ -68,6 +69,35 @@ export async function filterReportsWithinRadius<
     }
   }
   return results
+}
+
+export interface CourseWithDistance {
+  course: Course
+  distanceMiles: number
+}
+
+export async function coursesWithinRadius(
+  courses: Course[],
+  userZip: string,
+  radiusMiles = AREA_RADIUS_MILES,
+): Promise<CourseWithDistance[]> {
+  const zipcodes = await getZipcodes()
+  const z1 = normalizeZip(userZip)
+  if (z1.length !== 5 || !zipcodes.lookup(z1)) return []
+
+  const results: CourseWithDistance[] = []
+  for (const course of courses) {
+    const courseZip = course.zipcode
+    if (!courseZip) continue
+    const z2 = normalizeZip(courseZip)
+    if (z2.length !== 5) continue
+    const distance = zipcodes.distance(z1, z2)
+    if (distance != null && distance <= radiusMiles) {
+      results.push({ course, distanceMiles: distance })
+    }
+  }
+
+  return results.sort((a, b) => a.distanceMiles - b.distanceMiles)
 }
 
 export function isZipFormatValid(zip: string): boolean {
