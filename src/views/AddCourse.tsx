@@ -263,7 +263,7 @@ export function AddCourse() {
         </button>
 
         <p className="text-center text-sm">
-          <Link to="/about" className="font-semibold text-green-mid underline">
+          <Link to="/about" className="text-link">
             ← Back to About
           </Link>
         </p>

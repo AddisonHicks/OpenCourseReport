@@ -7,7 +7,7 @@ import { TransportToggle } from '../components/TransportToggle'
 import { SubmitConfirmation } from '../components/SubmitConfirmation'
 import { useToast } from '../context/ToastContext'
 import { getCourseBySlug, formatCourseLocation, coursePath } from '../lib/courses'
-import { addRecentCourse, setLastSubmitted, setUserZipcode } from '../lib/localStorage'
+import { addRecentCourse, setLastSubmitted, setSubmitterIdentity, setUserZipcode, getSubmitterIdentity } from '../lib/localStorage'
 import { todayLocalDateString } from '../lib/reportQueries'
 import { ensureUniqueReportSlug } from '../lib/reportSlug'
 import { supabase } from '../lib/supabase'
@@ -26,8 +26,12 @@ export function Submit() {
   const state = location.state as SubmitLocationState | null
   const courseIdParam = searchParams.get('course')
 
-  const [firstName, setFirstName] = useState('')
-  const [lastInitial, setLastInitial] = useState('')
+  const [firstName, setFirstName] = useState(
+    () => getSubmitterIdentity()?.firstName ?? '',
+  )
+  const [lastInitial, setLastInitial] = useState(
+    () => getSubmitterIdentity()?.lastInitial ?? '',
+  )
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
   const [datePlayed, setDatePlayed] = useState(todayLocalDateString)
   const [timeOfDay, setTimeOfDay] = useState<TimeOfDay>('morning')
@@ -62,9 +66,16 @@ export function Submit() {
     })
   }, [courseIdParam, state?.course, state?.courseId])
 
+  useEffect(() => {
+    if (firstName.trim() && lastInitial.trim().length === 1) {
+      setSubmitterIdentity({
+        firstName: firstName.trim(),
+        lastInitial: lastInitial.trim(),
+      })
+    }
+  }, [firstName, lastInitial])
+
   const resetForm = () => {
-    setFirstName('')
-    setLastInitial('')
     setDatePlayed(todayLocalDateString())
     setTimeOfDay('morning')
     setPricePaid('')
@@ -138,6 +149,10 @@ export function Submit() {
       city: selectedCourse.city,
       state: selectedCourse.state,
       zipcode: selectedCourse.zipcode,
+    })
+    setSubmitterIdentity({
+      firstName: firstName.trim(),
+      lastInitial: lastInitial.trim().charAt(0).toUpperCase(),
     })
     setLastSubmitted(datePlayed)
     if (selectedCourse.zipcode) {

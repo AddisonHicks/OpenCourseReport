@@ -1,15 +1,18 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { coursePath } from '../lib/courses'
+import { ShareButton } from './ShareButton'
 import type { ReportDisplay } from '../types'
 import {
   formatDateNumeric,
+  formatDateWithWeekday,
   formatHolesPlayed,
   formatPace,
   formatPrice,
   submitterName,
   timeOfDayLabel,
 } from '../lib/reportQueries'
+import { reportShareUrl } from '../lib/share'
 
 interface ReportModalProps {
   report: ReportDisplay
@@ -33,7 +36,7 @@ function ConditionBlock({
 
 export function ReportModal({ report, onClose }: ReportModalProps) {
   const navigate = useNavigate()
-  const playedDate = formatDateNumeric(report.date_played)
+  const playedDate = formatDateWithWeekday(report.date_played)
   const reportTitleDate = formatDateNumeric(report.date_played)
   const transportLabel =
     report.transport_mode === 'walking'
@@ -63,39 +66,40 @@ export function ReportModal({ report, onClose }: ReportModalProps) {
       onClick={onClose}
     >
       <div
-        className="max-h-[90dvh] w-full max-w-lg overflow-y-auto rounded-2xl border-4 border-green-dark bg-sand p-5 shadow-xl"
+        className="max-h-[90dvh] w-full max-w-lg overflow-hidden rounded-2xl border-4 border-green-dark bg-sand shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="mb-4 flex items-start justify-between gap-3">
-          <div className="min-w-0 flex-1 text-left">
+        <div className="modal-scroll max-h-[90dvh] overflow-y-auto p-5">
+        <div className="mb-4">
+          <div className="flex items-start justify-between gap-3">
             <h2
               id="report-modal-title"
-              className="font-display text-2xl font-bold text-green-dark"
+              className="min-w-0 flex-1 font-display text-2xl font-bold text-green-dark"
             >
               {reportTitleDate} Report
             </h2>
-            <p className="mt-1 text-base text-green-dark">
-              Submitted By:{' '}
-              {submitterName(report.first_name, report.last_initial)}
-            </p>
             <button
               type="button"
-              onClick={() => {
-                onClose()
-                navigate(coursePath(report.courses))
-              }}
-              className="mt-1 block text-left font-display text-base font-semibold text-green-mid underline"
+              onClick={onClose}
+              aria-label="Close report"
+              className="-mt-3 shrink-0 text-5xl font-light leading-none text-green-dark active:opacity-70"
             >
-              {report.courses.course_name}
+              ×
             </button>
           </div>
+          <p className="mt-1 text-base text-green-dark">
+            Submitted By:{' '}
+            {submitterName(report.first_name, report.last_initial)}
+          </p>
           <button
             type="button"
-            onClick={onClose}
-            aria-label="Close report"
-            className="-mt-3 shrink-0 text-5xl font-light leading-none text-green-dark active:opacity-70"
+            onClick={() => {
+              onClose()
+              navigate(coursePath(report.courses))
+            }}
+            className="text-link text-link-display mt-1 w-full text-left text-base"
           >
-            ×
+            {report.courses.course_name}
           </button>
         </div>
 
@@ -152,6 +156,16 @@ export function ReportModal({ report, onClose }: ReportModalProps) {
             />
           </div>
         </section>
+
+        <div className="mt-4 flex justify-end border-t border-green-dark/25 pt-4">
+          <ShareButton
+            url={reportShareUrl(report)}
+            title={`${report.courses.course_name} report`}
+            text={`Golf conditions report for ${report.courses.course_name}`}
+            label="Share report"
+          />
+        </div>
+        </div>
       </div>
     </div>
   )

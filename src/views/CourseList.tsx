@@ -33,7 +33,7 @@ export function CourseList() {
         </h1>
         <p className="text-green-dark/70">No courses in the database yet.</p>
         <p className="mt-4">
-          <Link to="/add-course" className="font-semibold text-green-mid underline">
+          <Link to="/add-course" className="text-link">
             Add a course
           </Link>
         </p>

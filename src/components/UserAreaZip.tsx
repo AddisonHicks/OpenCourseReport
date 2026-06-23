@@ -81,7 +81,7 @@ export function UserAreaZip({ userZip, onZipChange }: UserAreaZipProps) {
             setEditing(true)
             setError('')
           }}
-          className="font-semibold text-green-mid underline"
+          className="text-link"
         >
           Change
         </button>

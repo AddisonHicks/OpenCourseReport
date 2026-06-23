@@ -32,7 +32,7 @@ export function About() {
       <p className="mb-4 text-sm">
         <Link
           to="/courses"
-          className="min-h-11 inline-flex items-center font-semibold text-green-mid underline"
+          className="text-link min-h-11 inline-flex items-center"
         >
           Browse all courses by state
         </Link>
@@ -41,7 +41,7 @@ export function About() {
       <p className="mb-4 text-sm">
         <Link
           to="/add-course"
-          className="min-h-11 inline-flex items-center font-semibold text-green-mid underline"
+          className="text-link min-h-11 inline-flex items-center"
         >
           Add a course to the database
         </Link>
@@ -52,7 +52,7 @@ export function About() {
           href={GITHUB_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="min-h-11 inline-flex items-center font-semibold text-green-mid underline"
+          className="text-link min-h-11 inline-flex items-center"
         >
           View on GitHub
         </a>

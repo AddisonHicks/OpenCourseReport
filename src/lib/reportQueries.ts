@@ -143,14 +143,11 @@ export function formatDateNumeric(dateStr: string): string {
   return `${mm}/${dd}/${yyyy}`
 }
 
-/** e.g. 6/08/26 (Mon) */
+/** e.g. 06/08/2026 (Mon) */
 export function formatDateWithWeekday(dateStr: string): string {
   const d = new Date(dateStr.includes('T') ? dateStr : dateStr + 'T12:00:00')
-  const month = d.getMonth() + 1
-  const day = String(d.getDate()).padStart(2, '0')
-  const year = String(d.getFullYear()).slice(-2)
   const weekday = d.toLocaleDateString('en-US', { weekday: 'short' })
-  return `${month}/${day}/${year} (${weekday})`
+  return `${formatDateNumeric(dateStr)} (${weekday})`
 }
 
 export function formatPrice(price: number | null): string {

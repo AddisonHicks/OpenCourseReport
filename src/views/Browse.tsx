@@ -99,7 +99,7 @@ export function Browse() {
               <button
                 type="button"
                 onClick={() => navigate('/submit')}
-                className="font-semibold text-green-mid underline"
+                className="text-link"
               >
                 Submit one
               </button>

@@ -7,6 +7,7 @@ interface ShareButtonProps {
   text?: string
   label?: string
   className?: string
+  icon?: React.ReactNode
 }
 
 const defaultClassName =
@@ -18,6 +19,7 @@ export function ShareButton({
   text,
   label = 'Share',
   className = defaultClassName,
+  icon,
 }: ShareButtonProps) {
   const { showToast } = useToast()
 
@@ -29,7 +31,12 @@ export function ShareButton({
   }
 
   return (
-    <button type="button" onClick={(e) => void handleShare(e)} className={className}>
+    <button
+      type="button"
+      onClick={(e) => void handleShare(e)}
+      className={icon ? `inline-flex items-center gap-1.5 ${className}` : className}
+    >
+      {icon}
       {label}
     </button>
   )

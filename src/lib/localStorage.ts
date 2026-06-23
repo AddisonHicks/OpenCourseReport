@@ -3,7 +3,13 @@ import type { RecentCourse } from '../types'
 const RECENT_KEY = 'fr_recent_courses'
 const LAST_SUBMITTED_KEY = 'fr_last_submitted'
 const USER_ZIP_KEY = 'fr_user_zipcode'
+const SUBMITTER_KEY = 'fr_submitter'
 const VOTE_PREFIX = 'fr_voted_'
+
+export interface SubmitterIdentity {
+  firstName: string
+  lastInitial: string
+}
 
 export function getRecentCourses(): RecentCourse[] {
   try {
@@ -45,6 +51,30 @@ export function setUserZipcode(zip: string): void {
 
 export function clearUserZipcode(): void {
   localStorage.removeItem(USER_ZIP_KEY)
+}
+
+export function getSubmitterIdentity(): SubmitterIdentity | null {
+  try {
+    const raw = localStorage.getItem(SUBMITTER_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as SubmitterIdentity
+    const firstName = parsed.firstName?.trim() ?? ''
+    const lastInitial = parsed.lastInitial?.trim().charAt(0).toUpperCase() ?? ''
+    if (!firstName || !lastInitial) return null
+    return { firstName, lastInitial }
+  } catch {
+    return null
+  }
+}
+
+export function setSubmitterIdentity(identity: SubmitterIdentity): void {
+  const firstName = identity.firstName.trim()
+  const lastInitial = identity.lastInitial.trim().charAt(0).toUpperCase()
+  if (!firstName || !lastInitial) return
+  localStorage.setItem(
+    SUBMITTER_KEY,
+    JSON.stringify({ firstName, lastInitial }),
+  )
 }
 
 export function hasVoted(reportId: string): boolean {

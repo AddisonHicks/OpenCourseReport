@@ -12,7 +12,6 @@ import {
 import { setPageMeta, resetPageMeta } from '../lib/pageMeta'
 import {
   apply90DayFilter,
-  formatDateNumeric,
   sortReportsByDatePlayed,
 } from '../lib/reportQueries'
 import { fetchReportsForCourse } from '../lib/reports'
@@ -79,7 +78,7 @@ export function CoursePage() {
     return (
       <div>
         <p className="mb-4 text-green-dark">Course not found.</p>
-        <Link to="/" className="font-semibold text-green-mid">
+        <Link to="/" className="text-link">
           ← Back to Browse
         </Link>
       </div>
@@ -88,32 +87,21 @@ export function CoursePage() {
 
   return (
     <div className="-mx-4 space-y-8 px-4">
-      <header className="flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <h1 className="font-display text-2xl font-bold leading-tight text-green-dark">
-            {course.course_name}
-          </h1>
-          <p className="font-display text-base text-green-dark/70">
-            {formatCourseLocation(course)}
-          </p>
-        </div>
-        <div className="shrink-0 pt-1 text-right font-display text-sm text-green-dark">
-          <p>Last Report:</p>
-          <p className="font-semibold">
-            {lastReport ? formatDateNumeric(lastReport.date_played) : '—'}
-          </p>
-        </div>
-      </header>
-
-      <div className="flex justify-end">
+      <header>
+        <h1 className="font-display text-2xl font-bold leading-tight text-green-dark">
+          {course.course_name}
+        </h1>
+        <p className="font-display text-base text-green-dark/70">
+          {formatCourseLocation(course)}
+        </p>
         <ShareButton
           url={courseShareUrl(course)}
           title={course.course_name}
           text={`Golf reports for ${course.course_name}`}
-          label="Share course"
-          className="min-h-11 px-3 py-2 font-body text-sm font-semibold text-green-mid underline active:text-green-dark"
+          label="Share Course Page"
+          className="text-link text-link-display mt-1 text-xs active:text-green-dark"
         />
-      </div>
+      </header>
 
       <button
         type="button"

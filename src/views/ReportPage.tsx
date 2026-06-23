@@ -67,7 +67,7 @@ export function ReportPage() {
     return (
       <div className="mx-auto min-h-dvh max-w-lg bg-sand px-4 py-6">
         <p className="mb-4">Report not found.</p>
-        <Link to="/" className="font-semibold text-green-mid">
+        <Link to="/" className="text-link">
           ← Browse reports
         </Link>
       </div>
