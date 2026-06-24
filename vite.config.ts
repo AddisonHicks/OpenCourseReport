@@ -2,6 +2,7 @@ import { defineConfig, loadEnv, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { fileURLToPath, URL } from 'node:url'
+import { resolveSupabaseConfig } from './lib/supabaseEnv'
 
 function ogMetaPlugin(siteUrl: string, supabaseUrl: string): Plugin {
   const base = supabaseUrl.replace(/\/$/, '')
@@ -28,8 +29,11 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   const supabaseUrl =
     env.VITE_SUPABASE_URL ?? process.env.VITE_SUPABASE_URL ?? ''
-  const supabaseKey =
-    env.VITE_SUPABASE_ANON_KEY ?? process.env.VITE_SUPABASE_ANON_KEY ?? ''
+  const supabaseCfg = resolveSupabaseConfig({
+    ...env,
+    VITE_SUPABASE_URL: supabaseUrl,
+  })
+  const supabaseKey = supabaseCfg?.key ?? ''
   const siteUrl = (
     env.SITE_URL ??
     process.env.SITE_URL ??
@@ -38,7 +42,7 @@ export default defineConfig(({ mode }) => {
 
   if (mode === 'production' && (!supabaseUrl.trim() || !supabaseKey.trim())) {
     throw new Error(
-      'Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY. ' +
+      'Missing VITE_SUPABASE_URL or VITE_SUPABASE_PUBLISHABLE_KEY. ' +
         'Set both in Vercel → Settings → Environment Variables (Production), then redeploy.',
     )
   }
