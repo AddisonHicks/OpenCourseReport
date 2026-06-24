@@ -41,8 +41,16 @@ function getSiteUrl(): string {
 }
 
 function getSupabaseConfig(): { url: string; key: string } | null {
-  const url = (process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL ?? '').replace(/\/$/, '')
-  const key = process.env.SUPABASE_ANON_KEY ?? process.env.VITE_SUPABASE_ANON_KEY ?? ''
+  const url = (process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL ?? '').replace(
+    /\/$/,
+    '',
+  )
+  const key =
+    process.env.SUPABASE_PUBLISHABLE_KEY ??
+    process.env.VITE_SUPABASE_PUBLISHABLE_KEY ??
+    process.env.SUPABASE_ANON_KEY ??
+    process.env.VITE_SUPABASE_ANON_KEY ??
+    ''
   if (!url || !key) return null
   return { url, key }
 }
@@ -174,7 +182,6 @@ async function supabaseGet<T>(pathAndQuery: string): Promise<T | null> {
   const res = await fetch(`${cfg.url}/rest/v1/${pathAndQuery}`, {
     headers: {
       apikey: cfg.key,
-      Authorization: `Bearer ${cfg.key}`,
       Accept: 'application/json',
     },
   })
