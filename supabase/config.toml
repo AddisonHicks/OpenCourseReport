@@ -1,0 +1,15 @@
+# A string used to distinguish different Supabase projects on the same machine.
+# Not used by Edge Function JWT settings below, but required for `supabase start`.
+project_id = "open-course-report"
+
+[api]
+enabled = true
+
+[functions.register-discord-webhook]
+verify_jwt = false
+
+[functions.manage-discord-webhook]
+verify_jwt = false
+
+[functions.notify-discord-webhooks]
+verify_jwt = false

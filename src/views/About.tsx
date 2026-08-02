@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { DiscordWebhookSignup } from '../components/DiscordWebhookSignup'
 
 const GITHUB_URL = 'https://github.com/AddisonHicks/OpenCourseReport'
 
@@ -28,6 +29,8 @@ export function About() {
           courses and votes — nothing else is stored on our servers about you.
         </p>
       </div>
+
+      <DiscordWebhookSignup />
 
       <p className="mb-4 text-sm">
         <Link

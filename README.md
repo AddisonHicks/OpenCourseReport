@@ -34,9 +34,15 @@ For local development, copy `.env.example` to `.env.local` and use the project�
 | `/` | Browse — search, recent courses, report feed |
 | `/submit` | Submit a condition report |
 | `/course/:courseSlug` | Course detail, stats, reports |
-| `/about` | About the project |
+| `/about` | About the project (+ Discord webhook signup) |
 | `/course/:courseSlug/:reportSlug` | Shareable single report (e.g. `2026-06-08` or `2026-06-08-2`) |
 | `/embed/:courseId` | Minimal embed widget (iframe) |
+
+## Discord notifications
+
+Servers can register a Discord **incoming webhook** on the About page (city / state / radius). New reports within that radius are posted automatically via Supabase Edge Functions — no always-on Discord bot required.
+
+Setup guide: [`supabase/DISCORD_WEBHOOKS.md`](supabase/DISCORD_WEBHOOKS.md)
 
 ## Local Storage Keys
 
