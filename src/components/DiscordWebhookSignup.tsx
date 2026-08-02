@@ -169,16 +169,10 @@ export function DiscordWebhookSignup() {
   }
 
   return (
-    <section className="mb-8 rounded-xl border-2 border-green-mid/30 bg-white p-4">
-      <h2 className="font-display text-xl font-bold text-green-dark">
-        Discord notifications
-      </h2>
-      <p className="mt-2 text-sm leading-relaxed text-green-dark/80">
-        Get new course condition reports posted automatically to your Discord
-        server — filtered by city, state, and radius. No bot hosting required.
-      </p>
+    <section className="rounded-xl border-2 border-green-mid/30 bg-white p-4">
+      <h2 className="sr-only">Discord webhook registration</h2>
 
-      <ol className="mt-3 list-decimal space-y-1 pl-5 text-sm text-green-dark/80">
+      <ol className="list-decimal space-y-1 pl-5 text-sm text-green-dark/80">
         <li>
           In Discord: channel settings → <strong>Integrations</strong> →{' '}
           <strong>Webhooks</strong> → New Webhook → copy URL.

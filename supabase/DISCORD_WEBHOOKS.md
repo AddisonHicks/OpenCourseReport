@@ -56,7 +56,7 @@ Leave the body as the default JSON payload (includes `type`, `table`, `record`).
 
 1. Discord → channel (or forum parent) → Integrations → Webhooks → New Webhook → Copy URL
 2. For a **forum post**: Developer Mode → right-click the post → Copy Thread ID
-3. Open the live site **About** page → fill the Discord notifications form
+3. Open the live site **Discord notifications** page (`/discord-notifications`, linked from About) → fill the form
 4. **Copy and save the manage token** shown after success
 
 ## 5. Test
@@ -76,4 +76,4 @@ The webhook registry replaces the always-on bot for multi-server notifications.
 
 ## Manage / disable
 
-On the About page → **Manage an existing subscription** → paste manage token → Look up → Disable or Update location.
+On the **Discord notifications** page → **Manage an existing subscription** → paste manage token → Look up → Disable or Update location.

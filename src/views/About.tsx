@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import { DiscordWebhookSignup } from '../components/DiscordWebhookSignup'
 
 const GITHUB_URL = 'https://github.com/AddisonHicks/OpenCourseReport'
 
@@ -30,7 +29,14 @@ export function About() {
         </p>
       </div>
 
-      <DiscordWebhookSignup />
+      <p className="mb-4 text-sm">
+        <Link
+          to="/discord-notifications"
+          className="text-link min-h-11 inline-flex items-center"
+        >
+          Set up Discord notifications
+        </Link>
+      </p>
 
       <p className="mb-4 text-sm">
         <Link

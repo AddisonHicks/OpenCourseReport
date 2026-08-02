@@ -6,6 +6,7 @@ import { About } from './views/About'
 import { Browse } from './views/Browse'
 import { CourseList } from './views/CourseList'
 import { CoursePage } from './views/CoursePage'
+import { DiscordNotifications } from './views/DiscordNotifications'
 import { NearbyCourseList } from './views/NearbyCourseList'
 import { EmbedView } from './views/EmbedView'
 import { ReportPage } from './views/ReportPage'
@@ -20,6 +21,10 @@ export default function App() {
             <Route index element={<Browse />} />
             <Route path="submit" element={<Submit />} />
             <Route path="about" element={<About />} />
+            <Route
+              path="discord-notifications"
+              element={<DiscordNotifications />}
+            />
             <Route path="courses" element={<CourseList />} />
             <Route path="nearby-course-list" element={<NearbyCourseList />} />
             <Route path="add-course" element={<AddCourse />} />
