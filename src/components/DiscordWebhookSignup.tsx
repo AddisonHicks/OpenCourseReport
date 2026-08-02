@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { FieldLabel } from './FieldLabel'
 import { useToast } from '../context/ToastContext'
 import { US_STATES } from '../lib/usStates'
@@ -62,6 +63,30 @@ async function callFunction<T>(
   }
 }
 
+/** Prefer explicit thread field; otherwise pull ?thread_id= off the webhook URL. */
+function resolveWebhookAndThread(
+  webhookUrl: string,
+  threadId: string,
+): { webhookUrl: string; threadId: string | null } {
+  let cleanUrl = webhookUrl.trim()
+  let resolvedThread: string | null = threadId.replace(/\D/g, '').slice(0, 20) || null
+
+  try {
+    const parsed = new URL(cleanUrl)
+    const fromQuery = parsed.searchParams.get('thread_id')
+    if (!resolvedThread && fromQuery && /^\d{17,20}$/.test(fromQuery)) {
+      resolvedThread = fromQuery
+    }
+    parsed.searchParams.delete('thread_id')
+    parsed.search = parsed.searchParams.toString()
+    cleanUrl = parsed.toString().replace(/\?$/, '')
+  } catch {
+    // leave as-is; server will validate
+  }
+
+  return { webhookUrl: cleanUrl, threadId: resolvedThread }
+}
+
 const inputClass =
   'min-h-11 w-full rounded-lg border-0 bg-white px-3 py-3 text-base text-green-dark shadow-sm focus:outline-none focus:ring-2 focus:ring-green-mid/40'
 const labelClass = 'mb-1 block font-display text-base text-green-dark'
@@ -87,19 +112,20 @@ export function DiscordWebhookSignup() {
   const [manageRadius, setManageRadius] = useState(String(AREA_RADIUS_MILES))
 
   const stateOptions = useMemo(() => US_STATES, [])
+  const registrationComplete = Boolean(manageToken && registered)
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
     setSubmitting(true)
-    setManageToken(null)
-    setRegistered(null)
+
+    const resolved = resolveWebhookAndThread(webhookUrl, threadId)
 
     const result = await callFunction<{
       manage_token: string
       subscription: SubscriptionSummary
     }>('register-discord-webhook', {
-      webhook_url: webhookUrl,
-      thread_id: threadId || null,
+      webhook_url: resolved.webhookUrl,
+      thread_id: resolved.threadId,
       label,
       city,
       state,
@@ -168,6 +194,77 @@ export function DiscordWebhookSignup() {
     )
   }
 
+  if (registrationComplete && manageToken && registered) {
+    return (
+      <section
+        className="rounded-xl border-2 border-green-mid/40 bg-white p-4"
+        aria-live="polite"
+      >
+        <h2 className="font-display text-xl font-bold text-green-dark">
+          Subscription created
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-green-dark/80">
+          Your Discord webhook is registered for{' '}
+          <strong>
+            {registered.city}, {registered.state}
+          </strong>{' '}
+          within <strong>{registered.radius_miles} miles</strong>
+          {registered.label ? ` (${registered.label})` : ''}. New reports in
+          that area will post automatically.
+        </p>
+
+        <div className="mt-4 rounded-lg border border-amber-500/40 bg-amber-50 p-3">
+          <p className="font-display text-sm font-bold text-green-dark">
+            1. Save this manage token — you will not see it again
+          </p>
+          <p className="mt-2 break-all rounded bg-white px-2 py-2 font-mono text-xs text-green-dark">
+            {manageToken}
+          </p>
+          <button
+            type="button"
+            className="mt-2 min-h-11 text-sm font-medium text-green-mid"
+            onClick={() => {
+              void navigator.clipboard.writeText(manageToken)
+              showToast('Manage token copied.')
+            }}
+          >
+            Copy token
+          </button>
+        </div>
+
+        <ol className="mt-4 list-decimal space-y-2 pl-5 text-sm leading-relaxed text-green-dark/80">
+          <li>Store the token somewhere safe (you need it to disable or update later).</li>
+          <li>
+            Go back to the home page and{' '}
+            <Link to="/submit" className="text-link font-medium">
+              submit a test report
+            </Link>{' '}
+            for a course near {registered.city}, {registered.state}.
+          </li>
+          <li>
+            Check Discord — the report embed should appear within a few seconds.
+            That confirms the webhook is working.
+          </li>
+        </ol>
+
+        <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+          <Link
+            to="/"
+            className="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg bg-green-mid px-4 py-3 text-center font-display text-base font-bold text-white"
+          >
+            Go to home
+          </Link>
+          <Link
+            to="/submit"
+            className="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg border-2 border-green-mid px-4 py-3 text-center font-display text-base font-bold text-green-mid"
+          >
+            Submit a test report
+          </Link>
+        </div>
+      </section>
+    )
+  }
+
   return (
     <section className="rounded-xl border-2 border-green-mid/30 bg-white p-4">
       <h2 className="sr-only">Discord webhook registration</h2>
@@ -179,7 +276,8 @@ export function DiscordWebhookSignup() {
         </li>
         <li>
           For a <strong>forum post</strong>, also copy the post/thread ID (enable
-          Developer Mode → right-click the post → Copy Thread ID).
+          Developer Mode → right-click the post → Copy Thread ID), or include{' '}
+          <code className="text-xs">?thread_id=...</code> on the webhook URL.
         </li>
         <li>Fill in the form below and save your manage token.</li>
       </ol>
@@ -207,7 +305,9 @@ export function DiscordWebhookSignup() {
             type="text"
             inputMode="numeric"
             value={threadId}
-            onChange={(e) => setThreadId(e.target.value.replace(/\D/g, '').slice(0, 20))}
+            onChange={(e) =>
+              setThreadId(e.target.value.replace(/\D/g, '').slice(0, 20))
+            }
             placeholder="Optional — for posting inside a forum post"
             autoComplete="off"
           />
@@ -220,7 +320,7 @@ export function DiscordWebhookSignup() {
             type="text"
             value={label}
             onChange={(e) => setLabel(e.target.value)}
-            placeholder="e.g. Athens Golf Discord"
+            placeholder="e.g. Golf Discord"
             maxLength={120}
           />
         </div>
@@ -279,32 +379,6 @@ export function DiscordWebhookSignup() {
           {submitting ? 'Registering…' : 'Register Discord webhook'}
         </button>
       </form>
-
-      {manageToken && registered && (
-        <div className="mt-4 rounded-lg border border-amber-500/40 bg-amber-50 p-3">
-          <p className="font-display text-sm font-bold text-green-dark">
-            Save this manage token — you will not see it again
-          </p>
-          <p className="mt-1 break-all rounded bg-white px-2 py-2 font-mono text-xs text-green-dark">
-            {manageToken}
-          </p>
-          <p className="mt-2 text-xs text-green-dark/70">
-            Registered for {registered.city}, {registered.state} within{' '}
-            {registered.radius_miles} miles
-            {registered.label ? ` (${registered.label})` : ''}.
-          </p>
-          <button
-            type="button"
-            className="mt-2 text-sm font-medium text-green-mid"
-            onClick={() => {
-              void navigator.clipboard.writeText(manageToken)
-              showToast('Manage token copied.')
-            }}
-          >
-            Copy token
-          </button>
-        </div>
-      )}
 
       <div className="mt-6 border-t border-green-pale pt-4">
         <h3 className="font-display text-lg font-bold text-green-dark">

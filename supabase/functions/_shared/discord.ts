@@ -22,6 +22,8 @@ export function buildWebhookExecuteUrl(
 ): string {
   const url = new URL(webhookUrl.trim())
   url.searchParams.set('wait', 'true')
+  // Required for incoming (non-app) webhooks to honor link buttons / components
+  url.searchParams.set('with_components', 'true')
   if (threadId) url.searchParams.set('thread_id', threadId)
   return url.toString()
 }

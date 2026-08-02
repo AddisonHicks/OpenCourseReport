@@ -173,8 +173,6 @@ export function buildDiscordWebhookPayload(
   const description = [
     `${course.city}, ${course.state} | Played ${formatDate(report.date_played)} | ${timeOfDayEmoji(report.time_of_day)} ${timeOfDayLabel(report.time_of_day)}`,
     `Submitted by: ${name}`,
-    '',
-    `[View Report](${reportUrl}) · [Submit a Report](${submitUrl})`,
   ].join('\n')
 
   return {
@@ -203,7 +201,7 @@ export function buildDiscordWebhookPayload(
           {
             type: 2,
             style: 5,
-            label: 'Submit a Report',
+            label: 'Submit Your Own Report',
             url: submitUrl,
           },
         ],
