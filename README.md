@@ -41,7 +41,7 @@ For local development, copy `.env.example` to `.env.local` and use the project�
 
 ## Discord notifications
 
-Servers can register a Discord **incoming webhook** on the [/discord-notifications](https://open-course-report.vercel.app/discord-notifications) page (linked from About). New reports within that radius are posted automatically via Supabase Edge Functions — no always-on Discord bot required.
+Servers can register a Discord **incoming webhook** on the [/discord-notifications](https://coursereport.ptc-golf.com/discord-notifications) page (linked from About). New reports within that radius are posted automatically via Supabase Edge Functions — no always-on Discord bot required.
 
 Setup guide: [`supabase/DISCORD_WEBHOOKS.md`](supabase/DISCORD_WEBHOOKS.md)
 

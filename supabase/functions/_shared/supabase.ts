@@ -33,7 +33,7 @@ export function createServiceClient(): SupabaseClient {
 }
 
 export function siteUrl(): string {
-  return (Deno.env.get('SITE_URL') ?? 'https://open-course-report.vercel.app').replace(
+  return (Deno.env.get('SITE_URL') ?? 'https://coursereport.ptc-golf.com').replace(
     /\/$/,
     '',
   )

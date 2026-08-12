@@ -4,7 +4,7 @@
  */
 
 const SITE_NAME = 'OpenCourseReport'
-const DEFAULT_SITE_URL = 'https://open-course-report.vercel.app'
+const DEFAULT_SITE_URL = 'https://coursereport.ptc-golf.com'
 
 interface OgMeta {
   title: string

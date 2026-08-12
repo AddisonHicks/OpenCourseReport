@@ -37,7 +37,7 @@ export default defineConfig(({ mode }) => {
   const siteUrl = (
     env.SITE_URL ??
     process.env.SITE_URL ??
-    'https://open-course-report.vercel.app'
+    'https://coursereport.ptc-golf.com'
   ).replace(/\/$/, '')
 
   if (mode === 'production' && (!supabaseUrl.trim() || !supabaseKey.trim())) {
