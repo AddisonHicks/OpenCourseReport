@@ -29,7 +29,7 @@ supabase functions deploy notify-discord-webhooks --no-verify-jwt
 Set function secrets (Dashboard → Edge Functions → Secrets, or CLI):
 
 ```bash
-supabase secrets set SITE_URL=https://open-course-report.vercel.app
+supabase secrets set SITE_URL=https://coursereport.ptc-golf.com
 supabase secrets set DISCORD_NOTIFY_WEBHOOK_SECRET=generate-a-long-random-string
 ```
 

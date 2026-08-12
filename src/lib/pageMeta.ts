@@ -5,7 +5,7 @@ import {
   type OgMeta,
 } from './ogMeta'
 
-const DEFAULT_SITE_URL = 'https://open-course-report.vercel.app'
+const DEFAULT_SITE_URL = 'https://coursereport.ptc-golf.com'
 
 function getClientSiteUrl(): string {
   if (typeof window !== 'undefined' && window.location.origin) {
